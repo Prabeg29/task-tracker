@@ -44,7 +44,9 @@ export const routeNotFound = (_req: Request, res: Response, next: NextFunction) 
 export const genericErrorHandler = (error: Error, req: Request, res: Response, _next: NextFunction) => {
   const err = buildError(error);
 
-  logger.error(`${req.method}:${req.path} >> ${error.stack} || ${error.message}`);
+  if (process.env.NODE_ENV !== 'test') {
+    logger.error(`${req.method}:${req.path} >> ${error.stack} || ${error.message}`);
+  }
 
   res.status(err.statusCode).json({ message: err.message });
 };

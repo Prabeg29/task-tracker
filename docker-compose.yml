@@ -13,18 +13,33 @@ services:
     command: --mysql-native-password=ON
     restart: always
     environment:
-      MYSQL_DATABASE: task-tracker
+      MYSQL_DATABASE: task_tracker
       MYSQL_ROOT_PASSWORD: secret
     volumes:
-      - ./server/db-data:/var/lib/mysql
+      - ./backend/db-data:/var/lib/mysql
     ports:
       - 4306:3306
     networks:
       - task-tracker
   
+  test-db:
+    image: mysql:latest
+    container_name: task-tracker_test-db
+    cap_add:
+      - SYS_NICE
+    command: --mysql-native-password=ON
+    restart: always
+    environment:
+      MYSQL_DATABASE: task_tracker_test
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - 2306:3306
+    networks:
+      - task-tracker
+  
   backend:
     build:
-      context: ./backend
+      context: ./backend/
       dockerfile: Dockerfile
     image: backend_image
     container_name: task-tracker_api
@@ -35,6 +50,6 @@ services:
     ports:
       - 8848:8848
     volumes:
-      - ./server:/home/task-tracker
+      - ./backend:/home/task-tracker
     networks:
       - task-tracker

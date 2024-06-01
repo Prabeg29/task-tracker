@@ -1,5 +1,6 @@
 import knex, { Knex } from 'knex';
 
+import logger from './logger.util';
 import defaultConfig from '../knexfile';
 
 const dbConn = knex(defaultConfig);
@@ -44,8 +45,18 @@ const paginate = async <T>(
   return { data, paginationInfo };
 };
 
+const refreshDatabase = async () => {
+  try {
+    await dbConn.migrate.rollback({}, true);
+    await dbConn.migrate.latest();
+  } catch (err) {
+    logger.error({ err }, "Error while refreshing database");
+  }
+};
+
 export {
   dbConn,
   paginate,
   PaginationInfo,
+  refreshDatabase
 };
