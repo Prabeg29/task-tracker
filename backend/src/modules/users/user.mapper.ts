@@ -1,9 +1,9 @@
-import config from '../../config';
-import { roles } from '../../enums/roles.enum';
-import { User, UserResponseDto } from './user.type';
+import config from "../../config";
+import { roles } from "../../enums/roles.enum";
+import { User, UserResponseDto } from "./user.type";
 
 export class UserMapper {
-  public static toResponseDto (user: User & { token?: string; }): UserResponseDto {
+  public static toResponseDto (user: User & { accessToken?: string; }): UserResponseDto {
     return {
       id        : user.id,
       attributes: {
@@ -13,7 +13,8 @@ export class UserMapper {
         createdAt: user.createdAt.toDateString(),
         updatedAt: user.updatedAt.toDateString(),
       },
-      token: user.token ? user.token : undefined,
+      accessToken: user.accessToken ? user.accessToken : undefined,
+      type       : user.accessToken ? "Bearer" : undefined
     };
   }
 

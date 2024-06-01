@@ -12,7 +12,7 @@ export async function seed(knex: Knex): Promise<void> {
     const superAdmin: CreateUserDto = {
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        password: await bcrypt.hash('P@ssword123$', 10),
+        password: await bcrypt.hash("P@ssword123$", 10),
         role: roles.SUPER_ADMIN
     };
 

@@ -20,7 +20,8 @@ type UserResponseDto = {
     createdAt: string;
     updatedAt: string;
   },
-  token?: string,
+  accessToken?: string,
+  type?: string
 }
 
 export { User, CreateUserDto, UserResponseDto };

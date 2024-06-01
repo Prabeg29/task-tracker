@@ -14,6 +14,13 @@ export class AuthController {
     const user: User = await this.userService.create(req.body as CreateUserDto);
 
     res.status(StatusCodes.CREATED)
-      .json({ message: "Registration successfully.", user: UserMapper.toResponseDto(user) });
+      .json({ message: "Registration successful.", user: UserMapper.toResponseDto(user) });
+  };
+
+  public login = async (req: Request, res: Response): Promise<void> => {
+    const user: User & { accessToken: string; } = await this.userService.signin(req.body as Partial<CreateUserDto>);
+
+    res.status(StatusCodes.OK)
+      .json({ message: "Login successful.", user: UserMapper.toResponseDto(user) });
   };
 }
