@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { StatusCodes } from "http-status-codes";
 
 import { CreateUserDto, User } from "./user.type";
@@ -13,10 +14,10 @@ export class UserService {
     const isExistingUser = await this.userRepository.fetchOneByEmail(userData.email);
 
     if (isExistingUser) {
-      throw new HttpException('User with the provided email already exists',StatusCodes.BAD_REQUEST);
+      throw new HttpException("User with the provided email already exists",StatusCodes.BAD_REQUEST);
     }
 
-    // userData.password = await bcrypt.hash(userData.password, 10);
+    userData.password = await bcrypt.hash(userData.password, 10);
 
     return await this.userRepository.create(userData);
   }

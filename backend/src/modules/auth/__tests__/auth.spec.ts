@@ -9,76 +9,73 @@ import { KnexUserRepository } from "../../users/knex-user.repository";
 
 describe("POST: /api/auth/register", () => {
   const server: Server = (new App()).listen(3000);
+  const payload = {
+    "name": "Prabeg Shakya",
+    "email": "shakyaprabeg@gmail.com",
+    "password": "Password123$",
+    "role": 2
+  };
+  const invalidRegistrationPayloadSet = [
+    // empty payload
+    {},
+    // invalid password
+    {
+      "name": "Prabeg Shakya",
+      "email": "shakyaprabeg@gmail.com",
+      "password": "pass",
+      "role": 2
+    },
+    // invalid email
+    {
+      "name": "Prabeg Shakya",
+      "email": "shakyaprabeg@gmail.com++",
+      "password": "pass",
+      "role": 2
+    },
+    // invalid role
+    {
+      "name": "Prabeg Shakya",
+      "email": "shakyaprabeg@gmail.com++",
+      "password": "pass",
+      "role": 1
+    },
+  ];
+
   let response: request.Response;
 
-  const personalInformation = {
-    fullName: "Prabeg Shakya",
-    email: "shakyaprabeg@gmail.com",
-    password: bcrypt.hashSync("Password123$", 10),
-  };
-
   beforeEach(async () => {
-    // await refreshDatabase();
-    // jest.clearAllMocks();
+    await refreshDatabase();
+    jest.clearAllMocks();
   });
 
   afterAll(() => {
     server.close();
   });
 
-  const invalidRegistrationPayloadSet = [
-    // empty payload
-    {},
-    // invalid password
-    {
-      "fullName": "Prabeg Shakya",
-      "email": "shakyaprabeg@gmail.com",
-      "password": "pass"
-    },
-    // invalid email
-    {
-      "fullName": "Prabeg Shakya",
-      "email": "shakyaprabeg@gmail.com++",
-      "password": "pass"
-    },
-  ];
-
   it.each(invalidRegistrationPayloadSet)("should throw validation errors", async (invalidRegistrationPayload) => {
     response = await request(server)
       .post("/api/auth/register")
       .set("Accept", "application/json")
-      .send(invalidRegistrationPayloadSet);
+      .send(invalidRegistrationPayload);
 
     expect(response.status).toEqual(StatusCodes.UNPROCESSABLE_ENTITY);
   });
 
-  // it("should throw exception when the email provided already exits", async () => {
-  //   await (new KnexUserRepository(dbConn)).create(personalInformation);
+  it("should throw exception when the email provided already exits", async () => {
+    await (new KnexUserRepository(dbConn)).create({ ...payload, password: bcrypt.hashSync(payload.password, 10) });
 
-  //   const payload = {
-  //     "fullName": "Prabeg Shakya",
-  //     "email": "shakyaprabeg@gmail.com",
-  //     "password": "Password123$"
-  //   };
+    response = await request(server)
+      .post("/api/auth/register")
+      .set("Accept", "application/json")
+      .send(payload);
 
-  //   response = await request(server)
-  //     .post("/api/auth/signup")
-  //     .set("Accept", "application/json")
-  //     .send(payload);
-
-  //   expect(response.status).toEqual(StatusCodes.BAD_REQUEST);
-  //   expect(response.body.message).toEqual("Company and User already exists");
-  // });
+    expect(response.status).toEqual(StatusCodes.BAD_REQUEST);
+    expect(response.body.message).toEqual("User with the provided email already exists");
+  });
 
   // it("should return a newly created user", async () => {
-  //   const payload = {
-  //     "fullName": "Prabeg Shakya",
-  //     "email": "shakyaprabeg@gmail.com",
-  //     "password": "Password123$"
-  //   };
-
   //   response = await request(server)
-  //     .post("/api/auth/signup")
+  //     .post("/api/auth/register")
   //     .set("Accept", "application/json")
   //     .send(payload);
 
