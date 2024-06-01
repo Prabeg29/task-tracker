@@ -13,7 +13,7 @@ describe("POST: /api/auth/register", () => {
     "name": "Prabeg Shakya",
     "email": "shakyaprabeg@gmail.com",
     "password": "Password123$",
-    "role": 2
+    "role": 2,
   };
   const invalidRegistrationPayloadSet = [
     // empty payload
@@ -73,18 +73,18 @@ describe("POST: /api/auth/register", () => {
     expect(response.body.message).toEqual("User with the provided email already exists");
   });
 
-  // it("should return a newly created user", async () => {
-  //   response = await request(server)
-  //     .post("/api/auth/register")
-  //     .set("Accept", "application/json")
-  //     .send(payload);
+  it("should return a newly created user", async () => {
+    response = await request(server)
+      .post("/api/auth/register")
+      .set("Accept", "application/json")
+      .send(payload);
 
-  //   expect(response.status).toEqual(StatusCodes.CREATED);
-  //   expect(response.body.message).toEqual("Account registered successfully.");
-  //   expect(response.body.data.attributes).toMatchObject({
-  //     name: "Prabeg Shakya",
-  //     email: "shakyaprabeg@gmail.com",
-  //     role: "admin",
-  //   });
-  // });
+    expect(response.status).toEqual(StatusCodes.CREATED);
+    expect(response.body.message).toEqual("Registration successfully.");
+    expect(response.body.user.attributes).toMatchObject({
+      name: "Prabeg Shakya",
+      email: "shakyaprabeg@gmail.com",
+      role: "admin",
+    });
+  });
 });

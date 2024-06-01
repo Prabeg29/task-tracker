@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { CreateUserDto } from "../users/user.type";
+import { UserMapper } from "../users/user.mapper";
 import { UserService } from "../users/user.service";
+import { CreateUserDto, User } from "../users/user.type";
 
 export class AuthController {
   constructor(
@@ -10,9 +11,9 @@ export class AuthController {
   ) { }
 
   public register = async (req: Request, res: Response): Promise<void> => {
-    await this.userService.create(req.body as CreateUserDto);
+    const user: User = await this.userService.create(req.body as CreateUserDto);
 
     res.status(StatusCodes.CREATED)
-      .json({ message: 'Signup successfully.' });
+      .json({ message: "Registration successfully.", user: UserMapper.toResponseDto(user) });
   };
 }
