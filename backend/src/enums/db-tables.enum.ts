@@ -2,4 +2,5 @@
 
 export enum dbTables {
   USERS = "users",
+  TASKS = "tasks"
 }
