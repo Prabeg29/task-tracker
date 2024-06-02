@@ -8,7 +8,7 @@ const dbConn = knex(defaultConfig);
 interface PaginateOptions {
   currentPage: number;
   perPage: number;
-  selectParams?: Array<string>;
+  selectParams?: Array<string | Knex.Raw<any> >;
   countParam?: string;
 }
 
