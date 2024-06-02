@@ -1,4 +1,4 @@
-import { TaskCreateDto, TaskQueryDto, TaskWithUsers } from "./task.type";
+import { TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "./task.type";
 import { PaginationInfo } from "../../utils/db.util";
 import { TaskRepositoryInterface } from "./task.irepository";
 import { HttpException } from "../../exceptions/http.exception";
@@ -29,6 +29,16 @@ export class TaskService {
 
   public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
     return await this.taskRepository.create(taskData);
+  }
+
+  public async update(id: number, taskData: TaskUpdateDto): Promise<TaskWithUsers> {
+    const task: TaskWithUsers = await this.fetchOneById(id);
+
+    if (!task) {
+      throw new HttpException("Task with the provided id does not exists", StatusCodes.BAD_REQUEST);
+    }
+  
+    return await this.taskRepository.update(id, taskData);
   }
 
   public async delete(id: number): Promise<void> {

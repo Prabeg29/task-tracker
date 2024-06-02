@@ -23,7 +23,8 @@ type TaskQueryDto = {
   perPage?: string | number;
 };
 
-type TaskCreateDto = Omit<Task, 'id' | 'createdBy' | 'completedAt' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+type TaskCreateDto = Omit<Task, 'id' | 'createdBy' | 'status' | 'completedAt' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+type TaskUpdateDto = Partial<TaskCreateDto> & { status: string };
 
 type TaskResponseDto = {
   id: number;
@@ -42,4 +43,4 @@ type TaskResponseDto = {
   }
 }
 
-export { Task, TaskWithUsers, TaskQueryDto, TaskCreateDto, TaskResponseDto };
+export { Task, TaskWithUsers, TaskQueryDto, TaskCreateDto, TaskUpdateDto, TaskResponseDto };

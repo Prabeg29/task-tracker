@@ -4,7 +4,7 @@ import { ParamsDictionary } from "express-serve-static-core";
 
 import { TaskService } from "./task.service";
 import { TaskMapper } from "./task.mapper";
-import { TaskCreateDto, TaskQueryDto, TaskWithUsers } from "./task.type";
+import { TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "./task.type";
 
 export class TaskController {
   constructor(
@@ -36,7 +36,7 @@ export class TaskController {
   };
 
   public fetchOne = async (req: Request, res: Response): Promise<void> => {
-    const task = await this.taskService.fetchOneById(parseInt(req.params.id));
+    const task: TaskWithUsers = await this.taskService.fetchOneById(parseInt(req.params.id));
 
     res.status(StatusCodes.CREATED).json({
       message: "Task created successfully.",
@@ -45,9 +45,12 @@ export class TaskController {
   };
 
   public update = async (req: Request, res: Response): Promise<void> => {
-    await this.taskService.delete(parseInt(req.params.id));
+    const task: TaskWithUsers = await this.taskService.update(parseInt(req.params.id), req.body as TaskUpdateDto);
 
-    res.status(StatusCodes.OK).json({ message: "Artist deleted successfully" });
+    res.status(StatusCodes.OK).json({
+      message: "Task updated successfully",
+      task   : TaskMapper.toResponseDto(task)
+    });
   };
 
   public delete = async (req: Request, res: Response): Promise<void> => {

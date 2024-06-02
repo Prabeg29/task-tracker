@@ -2,7 +2,7 @@ import { dbConn } from "../../utils/db.util";
 import { dbTables } from "../../enums/db-tables.enum";
 import { TaskRepositoryInterface } from "./task.irepository";
 import { PaginationInfo, paginate } from "../../utils/db.util";
-import { Task, TaskCreateDto, TaskQueryDto, TaskWithUsers } from "./task.type";
+import { Task, TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "./task.type";
 
 export class KnexTaskRepository implements TaskRepositoryInterface {
   protected selectParams = [
@@ -66,9 +66,18 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
   }
 
   public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
-    const [taskId] = await dbConn(dbTables.TASKS).insert({ ...taskData, createdBy: 1 }, ["id"])
+    const [taskId] = await dbConn(dbTables.TASKS)
+      .insert({ ...taskData, status: "todo", createdBy: 1 }, ["id"])
 
     return await this.fetchOneById(taskId);
+  }
+
+  public async update(id: number, taskData: TaskUpdateDto): Promise<TaskWithUsers> {
+    await dbConn(dbTables.TASKS)
+      .where("id", id)
+      .update({ ...taskData, completedAt: taskData.status === "complete" ? new Date() : null })
+
+    return await this.fetchOneById(id);
   }
 
   public async delete(id: number): Promise<number> {
