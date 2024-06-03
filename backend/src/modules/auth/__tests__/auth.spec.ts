@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import { Server } from "http";
 import request from "supertest";
-import { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
-import { dbConn, refreshDatabase } from "../../../utils/db.util";
+import { refreshDatabase } from "../../../utils/db.util";
 import { KnexUserRepository } from "../../users/knex-user.repository";
 
 let server: Server;
@@ -12,34 +12,34 @@ let response: request.Response;
 
 describe("POST: /api/auth/register", () => {
   const payload = {
-    "name": "Prabeg Shakya",
-    "email": "shakyaprabeg@gmail.com",
+    "name"    : "Prabeg Shakya",
+    "email"   : "shakyaprabeg@gmail.com",
     "password": "Password123$",
-    "role": 2,
+    "role"    : 2,
   };
   const invalidRegistrationPayloadSet = [
     // empty payload
     {},
     // invalid password
     {
-      "name": "Prabeg Shakya",
-      "email": "shakyaprabeg@gmail.com",
+      "name"    : "Prabeg Shakya",
+      "email"   : "shakyaprabeg@gmail.com",
       "password": "pass",
-      "role": 2
+      "role"    : 2
     },
     // invalid email
     {
-      "name": "Prabeg Shakya",
-      "email": "shakyaprabeg@gmail.com++",
+      "name"    : "Prabeg Shakya",
+      "email"   : "shakyaprabeg@gmail.com++",
       "password": "pass",
-      "role": 2
+      "role"    : 2
     },
     // invalid role
     {
-      "name": "Prabeg Shakya",
-      "email": "shakyaprabeg@gmail.com++",
+      "name"    : "Prabeg Shakya",
+      "email"   : "shakyaprabeg@gmail.com++",
       "password": "pass",
-      "role": 1
+      "role"    : 1
     },
   ];
 
@@ -63,7 +63,7 @@ describe("POST: /api/auth/register", () => {
   });
 
   it("should throw exception when the email provided already exits", async () => {
-    await (new KnexUserRepository(dbConn)).create({ ...payload, password: bcrypt.hashSync(payload.password, 10) });
+    await (new KnexUserRepository()).create({ ...payload, password: bcrypt.hashSync(payload.password, 10) });
 
     response = await request(server)
       .post("/api/auth/register")
@@ -83,9 +83,9 @@ describe("POST: /api/auth/register", () => {
     expect(response.status).toEqual(StatusCodes.CREATED);
     expect(response.body.message).toEqual("Registration successful.");
     expect(response.body.user.attributes).toMatchObject({
-      name: "Prabeg Shakya",
+      name : "Prabeg Shakya",
       email: "shakyaprabeg@gmail.com",
-      role: "admin",
+      role : "admin",
     });
   });
 });
@@ -95,11 +95,11 @@ describe("POST: /api/auth/login", () => {
     await refreshDatabase();
     server = (new App()).listen(3000);
     jest.clearAllMocks();
-    await (new KnexUserRepository(dbConn)).create({
-      name: "Prabeg Shakya",
-      email: "shakyaprabeg@gmail.com",
+    await (new KnexUserRepository()).create({
+      name    : "Prabeg Shakya",
+      email   : "shakyaprabeg@gmail.com",
       password: bcrypt.hashSync("Password123$", 10),
-      role: 2,
+      role    : 2,
     });
   });
 
@@ -127,9 +127,9 @@ describe("POST: /api/auth/login", () => {
     expect(response.body.message).toEqual("Login successful.");
     expect(response.body.user.accessToken).toBeTruthy;
     expect(response.body.user.attributes).toMatchObject({
-      name: "Prabeg Shakya",
+      name : "Prabeg Shakya",
       email: "shakyaprabeg@gmail.com",
-      role: "admin",
+      role : "admin",
     });
   });
 });

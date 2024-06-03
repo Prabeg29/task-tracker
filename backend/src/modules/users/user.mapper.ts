@@ -4,16 +4,25 @@ import { User, UserResponseDto } from "./user.type";
 
 export class UserMapper {
   public static toResponseDto (user: User & { accessToken?: string; }): UserResponseDto {
+
+    if (typeof user.createdAt === "string") {
+      user.createdAt = new Date(user.createdAt);
+    }
+
+    if (typeof user.updatedAt === "string") {
+      user.updatedAt = new Date(user.updatedAt);
+    }
+
     return {
       id        : user.id,
       attributes: {
         name     : user.name,
         email    : user.email,
-        role     : roles[user.role].toLowerCase(),
+        role     : roles[Number(user.role)].toLowerCase(),
         createdAt: user.createdAt.toDateString(),
         updatedAt: user.updatedAt.toDateString(),
       },
-      accessToken: user.accessToken ? user.accessToken : undefined,
+      accessToken: user.accessToken ?? undefined,
       type       : user.accessToken ? "Bearer" : undefined
     };
   }

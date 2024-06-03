@@ -3,7 +3,7 @@ export class ValidationException extends Error {
 
   constructor(validationErrors: any) {
     super();
-    this.name = 'JsonSchemaValidationError';
+    this.name = "JsonSchemaValidationError";
     this.validationErrors = validationErrors;
   }
 }
