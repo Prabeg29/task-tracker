@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
 
 import config from "../../config";
+import { roles } from "../../enums/roles.enum";
 import { CreateUserDto, User } from "./user.type";
 import { UserRepositoryInterface } from "./user.irepository";
 import { HttpException } from "../../exceptions/http.exception";
@@ -40,7 +41,7 @@ export class UserService {
     return {
       ...isExistingUser,
       accessToken: jwt.sign(
-        { id: isExistingUser.id, email: isExistingUser.email, role: isExistingUser.role }, 
+        { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
         config.secrets.jwt, 
         { expiresIn: "10m" }
       )
