@@ -16,11 +16,13 @@ describe("Task Service", () => {
   let mockCreate: jest.SpyInstance<Promise<TaskWithUsers>, [taskData: TaskCreateDto]>;
   let mockFetchOneById: jest.SpyInstance<Promise<TaskWithUsers | undefined>, [id: number]>;
   let mockUpdate: jest.SpyInstance<Promise<TaskWithUsers>, [id: number, taskData: TaskUpdateDto]>;
+  let mockDelete: jest.SpyInstance<Promise<number>, [id: number]>;
 
   beforeEach(() => {
     mockCreate = jest.spyOn(knexTaskRepository, "create");
     mockFetchOneById = jest.spyOn(knexTaskRepository, "fetchOneById");
     mockUpdate = jest.spyOn(knexTaskRepository, "update");
+    mockDelete = jest.spyOn(knexTaskRepository, "delete");
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -86,6 +88,18 @@ describe("Task Service", () => {
 
       expect(mockUpdate).toHaveBeenCalledWith(userStub()[0].id, updateTaskDtoStub());
       expect(res).toMatchObject({ ...taskStub()[0], status: updateTaskDtoStub().status, assignedTo: userStub()[0] });
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete the task with the corresponding id", async () => {
+      mockFetchOneById.mockResolvedValue(taskStub()[0]);
+      mockDelete.mockResolvedValue(1);
+    
+      await taskService.delete(userStub()[0].id);
+
+      expect(mockFetchOneById).toHaveBeenCalledWith(userStub()[0].id);
+      expect(mockDelete).toHaveBeenCalledWith(userStub()[0].id);
     });
   });
 });
