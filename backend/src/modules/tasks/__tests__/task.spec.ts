@@ -1,5 +1,6 @@
 import { Server } from "http";
 import request from "supertest";
+import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
 import { refreshDatabase } from "../../../utils/db.util";
@@ -19,46 +20,83 @@ describe("Tasks API", () => {
   });
 
   describe("GET: /api/tasks", () => {
-    it("should forbid fetching task when user is not authenticated", () => {});
+    it("should forbid fetching task when user is not authenticated", async () => {
+      response = await request(server)
+        .get("/api/tasks")
+        .set("Accept", "application/json");
+      
+      expect(response.status).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.body.message).toEqual("No token provided");
+    });
 
-    it("should not allow authenticated user to fetch tasks, lacking permission to do so", () => {});
+    it("should not allow authenticated user to fetch tasks, lacking permission to do so", () => { });
 
-    it("should fetch tasks when user is authenticated and has permission", () => {});
+    it("should fetch tasks when user is authenticated and has permission", () => { });
   });
 
   describe("POST: /api/tasks", () => {
-    it("should forbid task creation when user is not authenticated", () => {});
+    it("should forbid task creation when user is not authenticated", async () => {
+      response = await request(server)
+        .delete("/api/tasks/1")
+        .set("Accept", "application/json")
+        .send();
 
-    it("should not allow authenticated user to create task, lacking permission to do so", () => {});
+      expect(response.status).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.body.message).toEqual("No token provided");
+    });
 
-    it("should show validation errors when task input is invalid", () => {});
+    it("should not allow authenticated user to create task, lacking permission to do so", () => { });
 
-    it("should create task from authenticated user allowed, having a valid task input", () => {});
+    it("should show validation errors when task input is invalid", () => { });
+
+    it("should create task from authenticated user allowed, having a valid task input", () => { });
   });
 
   describe("GET: /api/tasks/:id", () => {
-    it("should forbid fetching task when user is not authenticated", () => {});
+    it("should forbid fetching task when user is not authenticated", async () => {
+      response = await request(server)
+        .get("/api/tasks/1")
+        .set("Accept", "application/json");
 
-    it("should not allow authenticated user to fetch task, lacking permission to do so", () => {});
+      expect(response.status).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.body.message).toEqual("No token provided");
+    });
 
-    it("should fetch task when user is authenticated and has permission", () => {});
+    it("should not allow authenticated user to fetch task, lacking permission to do so", () => { });
+
+    it("should fetch task when user is authenticated and has permission", () => { });
   });
 
   describe("PUT: /api/tasks/:id", () => {
-    it("should forbid task updation when user is not authenticated", () => {});
+    it("should forbid task updation when user is not authenticated", async () => {
+      response = await request(server)
+        .put("/api/tasks/1")
+        .set("Accept", "application/json")
+        .send();
 
-    it("should not allow authenticated user to update task, lacking permission to do so", () => {});
+      expect(response.status).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.body.message).toEqual("No token provided");
+    });
 
-    it("should show validation errors when task input is invalid", () => {});
+    it("should not allow authenticated user to update task, lacking permission to do so", () => { });
 
-    it("should update task from authenticated user allowed, having a valid task input", () => {});
+    it("should show validation errors when task input is invalid", () => { });
+
+    it("should update task from authenticated user allowed, having a valid task input", () => { });
   });
 
   describe("DELETE: /api/tasks/:id", () => {
-    it("should forbid task deletion when user is not authenticated", () => {});
+    it("should forbid task deletion when user is not authenticated", async () => {
+      response = await request(server)
+        .delete("/api/tasks/1")
+        .set("Accept", "application/json");
 
-    it("should not allow authenticated user to delete task, lacking permission to do so", () => {});
+      expect(response.status).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.body.message).toEqual("No token provided");
+    });
 
-    it("should delete task from authenticated user allowed, having a valid task input", () => {});
+    it("should not allow authenticated user to delete task, lacking permission to do so", () => { });
+
+    it("should delete task from authenticated user allowed, having a valid task input", () => { });
   });
 });

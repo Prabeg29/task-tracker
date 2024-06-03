@@ -24,7 +24,8 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.table(dbTables.TASKS, function (table) {
-    table.dropForeign(["createdBy", "assignedTo"]);
+    table.dropForeign(["createdBy"]);
+    table.dropForeign(["assignedTo"]);
   });
   await knex.schema.dropTable(dbTables.TASKS);
 }
