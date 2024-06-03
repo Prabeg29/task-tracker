@@ -19,8 +19,8 @@ export class TaskController {
 
     res.status(StatusCodes.OK).json({
       message: "Tasks fetched successfully",
-      songs: TaskMapper.toResponseDtoCollection(tasks),
-      meta: {
+      tasks  : TaskMapper.toResponseDtoCollection(tasks),
+      meta   : {
         paginationInfo: paginationInfo
       },
     });

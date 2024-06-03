@@ -8,7 +8,18 @@ export default [
   ...tseslint.configs.recommended,
   {
     rules: {
+      "indent": ["error", 2],
+      "linebreak-style": ["error", "unix"],
       "quotes": ["error", "double"],
+      "semi": ["error", "always"],
+      "block-spacing": "error",
+      "key-spacing": ["error", {
+          "align": {
+              "afterColon": true,
+              "on": "colon"
+          }
+      }],
+      "keyword-spacing": "error"
     }
   }
 ];

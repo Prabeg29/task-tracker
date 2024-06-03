@@ -1,12 +1,12 @@
-import cors from 'cors';
-import express from 'express';
-import { Server } from 'http';
-import bodyParser from 'body-parser';
-import compression from 'compression';
+import cors from "cors";
+import express from "express";
+import { Server } from "http";
+import bodyParser from "body-parser";
+import compression from "compression";
 
-import config from './config';
-import routes from './routes';
-import { genericErrorHandler, routeNotFound } from './middlewares/error-handler.middleware';
+import config from "./config";
+import routes from "./routes";
+import { genericErrorHandler, routeNotFound } from "./middlewares/error-handler.middleware";
 
 export class App {
   public app: express.Application;
@@ -32,7 +32,7 @@ export class App {
   }
 
   private loadRoutes(): void {
-    this.app.use('/api', routes);
+    this.app.use("/api", routes);
   }
 
   private loadErrorHandling(): void {

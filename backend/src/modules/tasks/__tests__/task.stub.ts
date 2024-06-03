@@ -20,17 +20,17 @@ const taskStub = (): TaskWithUsers[] => {
 
 const createTaskDtoStub = (): TaskCreateDto => {
   return {
-    title: "Push code to github",
+    title      : "Push code to github",
     description: "Push the latest commit to github"
   };
 };
 
 const updateTaskDtoStub = (): TaskUpdateDto => {
   return {
-    title: "Push code to github",
+    title      : "Push code to github",
     description: "Push the latest commit to github",
-    status: "in_progress",
-    assignedTo: userStub()[0].id
+    status     : "in_progress",
+    assignedTo : userStub()[0].id
   };
 };
 

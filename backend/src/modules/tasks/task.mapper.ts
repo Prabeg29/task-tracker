@@ -5,18 +5,18 @@ import { TaskResponseDto, TaskWithUsers } from "./task.type";
 export class TaskMapper {
   public static toResponseDto(task: TaskWithUsers): TaskResponseDto {
     return {
-      id: task.id,
+      id        : task.id,
       attributes: {
-        title: task.title,
+        title      : task.title,
         description: task?.description,
-        status: task.status,
+        status     : task.status,
         completedAt: task.completedAt?.toDateString(),
-        createdAt: task.createdAt.toDateString(),
-        updatedAt: task.updatedAt.toDateString(),
-        deletedAt: task.deletedAt?.toDateString(),
+        createdAt  : task.createdAt.toDateString(),
+        updatedAt  : task.updatedAt.toDateString(),
+        deletedAt  : task.deletedAt?.toDateString(),
       },
       relationships: {
-        createdBy: UserMapper.toResponseDto(task.createdBy),
+        createdBy : UserMapper.toResponseDto(task.createdBy),
         assignedTo: task.assignedTo ? UserMapper.toResponseDto(task.assignedTo) : undefined,
       }
     };

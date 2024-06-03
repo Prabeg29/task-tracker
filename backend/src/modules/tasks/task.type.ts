@@ -13,7 +13,7 @@ type Task = {
   deletedAt?: Date;
 };
 
-type TaskWithUsers = Omit<Task, 'createdBy' | 'assignedTo'> & { createdBy: User, assignedTo?: User};
+type TaskWithUsers = Omit<Task, "createdBy" | "assignedTo"> & { createdBy: User, assignedTo?: User};
 
 type TaskQueryDto = {
   search?: string;
@@ -23,7 +23,7 @@ type TaskQueryDto = {
   perPage?: string | number;
 };
 
-type TaskCreateDto = Omit<Task, 'id' | 'createdBy' | 'status' | 'completedAt' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+type TaskCreateDto = Omit<Task, "id" | "createdBy" | "status" | "completedAt" | "createdAt" | "updatedAt" | "deletedAt">;
 type TaskUpdateDto = Partial<TaskCreateDto> & { status: string };
 
 type TaskResponseDto = {

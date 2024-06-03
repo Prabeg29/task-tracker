@@ -9,11 +9,11 @@ export class KnexUserRepository implements UserRepositoryInterface {
   }
 
   public async fetchOneById(id: number): Promise<User | undefined> {
-    return await dbConn<User>(dbTables.USERS).where('id', id).first();
+    return await dbConn<User>(dbTables.USERS).where("id", id).first();
   }
   
   public async create(userData: CreateUserDto): Promise<User> {
-    const [userId] = await dbConn(dbTables.USERS).insert({ ...userData }, ['id'])
+    const [userId] = await dbConn(dbTables.USERS).insert({ ...userData }, ["id"]);
 
     return await this.fetchOneById(userId);
   }

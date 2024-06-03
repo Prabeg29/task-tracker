@@ -1,7 +1,7 @@
-import knex, { Knex } from 'knex';
+import knex, { Knex } from "knex";
 
-import logger from './logger.util';
-import defaultConfig from '../knexfile';
+import logger from "./logger.util";
+import defaultConfig from "../knexfile";
 
 const dbConn = knex(defaultConfig);
 
@@ -23,7 +23,7 @@ interface PaginationInfo {
 
 const paginate = async <T>(
   queryBuilder: Knex.QueryBuilder,
-  { currentPage, perPage, selectParams = ['*'], countParam = '*' }: PaginateOptions) => {
+  { currentPage, perPage, selectParams = ["*"], countParam = "*" }: PaginateOptions) => {
   if (currentPage < 1) {
     currentPage = 1;
   }

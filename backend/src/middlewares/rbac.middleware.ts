@@ -6,7 +6,6 @@ import { HttpException } from "../exceptions/http.exception";
 
 export const checkPermission = (permission: string) => {
   return (req: Request, _res: Response, next: NextFunction) => {
-    console.log('role: ', req.currentUser.role);
     const userPermissions = getPermissionsByRole(req.currentUser.role);
 
     if (!userPermissions.includes(permission)) {

@@ -48,11 +48,11 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
   public async fetchAllPaginated(taskQuery: TaskQueryDto): Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }> {
     const query = dbConn<Task>(dbTables.TASKS)
       .join(`${dbTables.USERS} as createdByUser`, `${dbTables.TASKS}.createdBy`, "createdByUser.id")
-      .leftJoin(`${dbTables.USERS} as assignedToUser`, `${dbTables.TASKS}.assignedTo`, "assignedToUser.id")
+      .leftJoin(`${dbTables.USERS} as assignedToUser`, `${dbTables.TASKS}.assignedTo`, "assignedToUser.id");
 
     return await paginate<TaskWithUsers>(query, {
-      currentPage: taskQuery.currentPage as number,
-      perPage: taskQuery.perPage as number,
+      currentPage : taskQuery.currentPage as number,
+      perPage     : taskQuery.perPage as number,
       selectParams: this.selectParams,
     });
   }
@@ -67,7 +67,7 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
 
   public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
     const [taskId] = await dbConn(dbTables.TASKS)
-      .insert({ ...taskData, status: "todo", createdBy: 1 }, ["id"])
+      .insert({ ...taskData, status: "todo", createdBy: 1 }, ["id"]);
 
     return await this.fetchOneById(taskId);
   }
@@ -75,7 +75,7 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
   public async update(id: number, taskData: TaskUpdateDto): Promise<TaskWithUsers> {
     await dbConn(dbTables.TASKS)
       .where("id", id)
-      .update({ ...taskData, completedAt: taskData.status === "complete" ? new Date() : null })
+      .update({ ...taskData, completedAt: taskData.status === "complete" ? new Date() : null });
 
     return await this.fetchOneById(id);
   }

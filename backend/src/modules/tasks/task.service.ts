@@ -13,7 +13,7 @@ export class TaskService {
     return await this.taskRepository.fetchAllPaginated({
       ...taskQuery,
       currentPage: Number(taskQuery.currentPage)|| 1,
-      perPage: Number(taskQuery.perPage)|| 25,
+      perPage    : Number(taskQuery.perPage)|| 25,
     } as TaskQueryDto);
   }
 

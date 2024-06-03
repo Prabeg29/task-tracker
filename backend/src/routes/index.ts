@@ -5,7 +5,7 @@ import taskRoute from "./task.route";
 
 const router: Router = Router();
 
-router.get("/ping", (_req, res) => res.json({ message: 'pong' }));
+router.get("/ping", (_req, res) => res.json({ message: "pong" }));
 router.use("/auth", authRoute);
 router.use("/tasks", taskRoute);
 

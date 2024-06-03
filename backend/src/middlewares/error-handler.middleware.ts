@@ -1,10 +1,10 @@
-import { StatusCodes } from 'http-status-codes';
-import { JsonWebTokenError } from 'jsonwebtoken';
-import { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from "http-status-codes";
+import { JsonWebTokenError } from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
 
-import logger from '../utils/logger.util';
-import { HttpException } from '../exceptions/http.exception';
-import { ValidationException } from '../exceptions/validation.exception';
+import logger from "../utils/logger.util";
+import { HttpException } from "../exceptions/http.exception";
+import { ValidationException } from "../exceptions/validation.exception";
 
 const buildError = (error: Error) => {
   if (error instanceof JsonWebTokenError) {
@@ -31,12 +31,12 @@ const buildError = (error: Error) => {
 
   return {
     statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-    message   : 'Something went wrong',
+    message   : "Something went wrong",
   };
 };
 
 export const routeNotFound = (_req: Request, res: Response, next: NextFunction) => {
-  res.status(StatusCodes.NOT_FOUND).json({ message: 'Resource not found' });
+  res.status(StatusCodes.NOT_FOUND).json({ message: "Resource not found" });
 
   next();
 };
@@ -44,7 +44,7 @@ export const routeNotFound = (_req: Request, res: Response, next: NextFunction) 
 export const genericErrorHandler = (error: Error, req: Request, res: Response, _next: NextFunction) => {
   const err = buildError(error);
 
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== "test") {
     logger.error(`${req.method}:${req.path} >> ${error.stack} || ${error.message}`);
   }
 

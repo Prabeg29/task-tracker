@@ -6,11 +6,11 @@ export class UserMapper {
   public static toResponseDto (user: User & { accessToken?: string; }): UserResponseDto {
 
     if (typeof user.createdAt === "string") {
-      user.createdAt = new Date(user.createdAt)
+      user.createdAt = new Date(user.createdAt);
     }
 
     if (typeof user.updatedAt === "string") {
-      user.updatedAt = new Date(user.updatedAt)
+      user.updatedAt = new Date(user.updatedAt);
     }
 
     return {

@@ -1,29 +1,29 @@
 import { roles } from "../../enums/roles.enum";
 
 const registrationSchema = {
-  type: 'object',
+  type      : "object",
   properties: {
-    name: { type: 'string', minLength: 1, maxLength: 255, },
-    email: { type: 'string', format: 'email', maxLength: 255, },
+    name    : { type: "string", minLength: 1, maxLength: 255, },
+    email   : { type: "string", format: "email", maxLength: 255, },
     password: {
-      type: 'string',
+      type     : "string",
       minLength: 8,
-      pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$'
+      pattern  : "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$"
     },
     role: { enum: [roles.ADMIN, roles.MEMBER] },
   },
-  required: ['name', 'email', 'password', 'role'],
+  required            : ["name", "email", "password", "role"],
   additionalProperties: false
 };
 
 
 const loginSchema = {
-  type: 'object',
+  type      : "object",
   properties: {
-    email: { type: 'string', format: 'email', maxLength: 255, },
-    password: { type: 'string' },
+    email   : { type: "string", format: "email", maxLength: 255, },
+    password: { type: "string" },
   },
-  required: ['email', 'password'],
+  required            : ["email", "password"],
   additionalProperties: false
 };
 

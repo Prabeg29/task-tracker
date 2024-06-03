@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from "express";
 
 export const tryCatchWrapper = (fn: CallableFunction) => {
   return (req: Request, res: Response, next: NextFunction) => {

@@ -1,16 +1,16 @@
 const taskCreateSchema = {
-  type: "object",
+  type      : "object",
   properties: {
     title      : { type: "string", minLength: 1, maxLength: 255, },
     description: { type: "string", format: "email", maxLength: 255, },
     assignedTo : { type: "number" },
   },
-  required: ["title"],
+  required            : ["title"],
   additionalProperties: false
 };
 
 const taskUpdateSchema = {
-  type: "object",
+  type      : "object",
   properties: {
     title      : { type: "string", minLength: 1, maxLength: 255, },
     description: { type: "string", format: "email", maxLength: 255, },

@@ -23,15 +23,15 @@ export default {
   },
   permissions: [
     {
-      "role": "super_admin",
+      "role"       : "super_admin",
       "permissions": ["create_tasks", "read_tasks", "update_tasks", "delete_tasks"]
     },
     {
-      "role": "admin",
+      "role"       : "admin",
       "permissions": ["create_tasks", "read_tasks", "update_tasks"]
     },
     {
-      "role": "member",
+      "role"       : "member",
       "permissions": ["create_tasks", "read_tasks", "update_tasks"]
     }
   ],

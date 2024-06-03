@@ -9,7 +9,7 @@ type User = {
   deletedAt?: Date;
 };
 
-type CreateUserDto = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+type CreateUserDto = Omit<User, "id" | "createdAt" | "updatedAt" | "deletedAt">;
 
 type UserResponseDto = {
   id: number;
