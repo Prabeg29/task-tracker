@@ -1,10 +1,11 @@
-import { HttpException } from "../../../exceptions/http.exception";
+import { TaskService } from "../task.service";
+import { PaginationInfo } from "../../../utils/db.util";
 import { userStub } from "../../users/__tests__/user.stub";
 import { KnexTaskRepository } from "../knex-task.repository";
 import { TaskRepositoryInterface } from "../task.irepository";
-import { TaskService } from "../task.service";
-import { TaskCreateDto, TaskUpdateDto, TaskWithUsers } from "../task.type";
+import { HttpException } from "../../../exceptions/http.exception";
 import { createTaskDtoStub, taskStub, updateTaskDtoStub } from "./task.stub";
+import { TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "../task.type";
 
 describe("Task Service", () => {
   const knexTaskRepository: TaskRepositoryInterface = new KnexTaskRepository();
@@ -17,15 +18,41 @@ describe("Task Service", () => {
   let mockFetchOneById: jest.SpyInstance<Promise<TaskWithUsers | undefined>, [id: number]>;
   let mockUpdate: jest.SpyInstance<Promise<TaskWithUsers>, [id: number, taskData: TaskUpdateDto]>;
   let mockDelete: jest.SpyInstance<Promise<number>, [id: number]>;
+  let mockFetchAllPaginated: jest.SpyInstance<
+    Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }>, [taskQuery: TaskQueryDto]
+  >;
 
   beforeEach(() => {
     mockCreate = jest.spyOn(knexTaskRepository, "create");
     mockFetchOneById = jest.spyOn(knexTaskRepository, "fetchOneById");
     mockUpdate = jest.spyOn(knexTaskRepository, "update");
     mockDelete = jest.spyOn(knexTaskRepository, "delete");
+    mockFetchAllPaginated = jest.spyOn(knexTaskRepository, "fetchAllPaginated");
   });
 
   afterEach(() => jest.clearAllMocks());
+
+  describe("fetchAllPaginated", () => {
+    it("should return array of tasks with paginated info", async () => {
+      const paginationInfo = {
+        total      : 1,
+        perPage    : 1,
+        currentPage: 1,
+        lastPage   : 1,
+        prevPage   : null,
+        nextPage   : null,
+      } as PaginationInfo;
+
+      const taskQuery: TaskQueryDto = {};
+
+      mockFetchAllPaginated.mockResolvedValue({ data: taskStub(), paginationInfo });
+
+      const res = await taskService.fetchAllPaginated(taskQuery);
+
+      expect(mockFetchAllPaginated).toHaveBeenCalledWith(1, 1);
+      expect(res).toMatchObject({ data: taskStub(), paginationInfo });
+    });
+  });
 
   describe("create", () => {
     it("should create a task", async () => {
