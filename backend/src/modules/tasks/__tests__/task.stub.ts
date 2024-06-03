@@ -1,5 +1,5 @@
 import { userStub } from "../../users/__tests__/user.stub";
-import { TaskCreateDto, TaskWithUsers } from "../task.type";
+import { TaskCreateDto, TaskUpdateDto, TaskWithUsers } from "../task.type";
 
 const taskStub = (): TaskWithUsers[] => {
   return [
@@ -25,4 +25,13 @@ const createTaskDtoStub = (): TaskCreateDto => {
   };
 };
 
-export { taskStub, createTaskDtoStub };
+const updateTaskDtoStub = (): TaskUpdateDto => {
+  return {
+    title: "Push code to github",
+    description: "Push the latest commit to github",
+    status: "in_progress",
+    assignedTo: userStub()[0].id
+  };
+};
+
+export { taskStub, createTaskDtoStub, updateTaskDtoStub };
