@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Button,
   Input,
   Option,
@@ -8,15 +9,16 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 
-import authService from "@/services/auth.service";
+import * as authService from "@/services/auth.service";
 
 export function Register() {
   const navigate = useNavigate();
+  const [alert, setAlert] = useState("");
   const [inputs, setInputs] = useState({
     name: "",
     email: "",
     password: "",
-    role: "member"
+    role: 2
   });
 
   const [errors, setErrors] = useState({
@@ -26,6 +28,7 @@ export function Register() {
   });
 
   const handleChange = (event) => {
+    setAlert("");
     const { name, value } = event.target;
     setInputs((prevInputs) => ({ ...prevInputs, [name]: value }));
     setErrors((prevErrors) => ({ ...prevErrors, [name]: validate(name, value) }));
@@ -38,7 +41,10 @@ export function Register() {
       case "email":
         return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "Invalid email format" : "";
       case "password":
-        return value.length < 6 ? "Password must be at least 6 characters" : "";
+        return value.length < 8 ||
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$/.test(value) ?
+          "Password must be at least 8 characters with at least one upper case, one number and one special character" :
+          "";
       default:
         return "";
     }
@@ -59,17 +65,15 @@ export function Register() {
     }
 
     try {
-      const { status, data } = await authService.register({ ...inputs, role: 2 });
-
-      if (status !== 201) {
-        throw "Something went wrong"
-      }
+      const { data } = await authService.register(inputs);
 
       localStorage.setItem("token", JSON.stringify(`${data.user.type} ${data.user.accessToken}`));
 
       navigate("/dashboard/home");
-    } catch (err) {
-      console.log(err);
+    } catch ({ response: { data, status } }) {
+      if (status !== 422) {
+        setAlert(data.message);
+      }
     }
   };
 
@@ -81,12 +85,20 @@ export function Register() {
           className="h-full w-full object-cover rounded-3xl"
         />
       </div>
-      <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
+      <div className="w-full lg:w-3/5 flex flex-col items-center jstify-center">
         <div className="text-center">
           <Typography variant="h2" className="font-bold mb-4">Join Us Today</Typography>
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to register.</Typography>
         </div>
+
         <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
+          {alert.length !== 0 && (<Alert
+            className="mb-5 flex flex-col gap-6"
+            color="red"
+          >
+            {alert}
+          </Alert>)}
+
           <div className="mb-5 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-4 font-medium">
               Name
@@ -158,10 +170,11 @@ export function Register() {
               Role
             </Typography>
             <Select
-              value={inputs.role.toUpperCase()}
+              value={inputs.role}
+              onChange={handleChange}
             >
-              <Option value="html">ADMIN</Option>
-              <Option value="react">MEMBER</Option>
+              <Option value={2}>ADMIN</Option>
+              <Option value={3}>MEMBER</Option>
             </Select>
           </div>
           <Button className="mt-6" fullWidth type="submit">

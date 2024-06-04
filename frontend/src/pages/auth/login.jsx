@@ -1,4 +1,5 @@
 import {
+  Alert,
   Input,
   Button,
   Typography,
@@ -10,6 +11,7 @@ import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import * as authService from "@/services/auth.service";
 
 export function Login() {
+  const [alert, setAlert] = useState("");
   const [inputs, setInputs] = useState({ email: "", password: "" });
   const [passwordShown, setPasswordShown] = useState(false);
   const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
@@ -18,6 +20,7 @@ export function Login() {
   const [errors, setErrors] = useState({ email: "", password: "" });
 
   const handleChange = (event) => {
+    setAlert("");
     const { name, value } = event.target;
     setInputs((prevInputs) => ({ ...prevInputs, [name]: value }));
     setErrors((prevErrors) => ({ ...prevErrors, [name]: validate(name, value) }));
@@ -52,17 +55,15 @@ export function Login() {
     }
 
     try {
-      const { status, data } = await authService.login(inputs);
-
-      if (status !== 200) {
-        throw "Something went wrong"
-      }
+      const { data } = await authService.login(inputs);
 
       localStorage.setItem("token", `${data.user.type} ${data.user.accessToken}`);
 
       navigate("/dashboard/home");
-    } catch (err) {
-      console.log(err);
+    } catch ({ response: { data, status } }) {
+      if (status !== 422) {
+        setAlert(data.message);
+      }
     }
   };
 
@@ -74,6 +75,12 @@ export function Login() {
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to login.</Typography>
         </div>
         <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
+        {alert.length !== 0 && (<Alert
+            className="mb-5 flex flex-col gap-6"
+            color="red"
+          >
+            {alert}
+          </Alert>)}
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
