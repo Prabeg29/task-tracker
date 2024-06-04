@@ -8,16 +8,16 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 
+import { useAuth } from "@/hooks/useAuth";
 import * as authService from "@/services/auth.service";
 
 export function Login() {
-  const [alert, setAlert] = useState("");
   const [inputs, setInputs] = useState({ email: "", password: "" });
-  const [passwordShown, setPasswordShown] = useState(false);
-  const togglePasswordVisiblity = () => setPasswordShown((cur) => !cur);
-  const navigate = useNavigate();
-
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const [passwordShown, setPasswordShown] = useState(false);
+  const [alert, setAlert] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     setAlert("");
@@ -55,11 +55,9 @@ export function Login() {
     }
 
     try {
-      const { data } = await authService.login(inputs);
+      const { data: { user } } = await authService.login(inputs);
 
-      localStorage.setItem("token", `${data.user.type} ${data.user.accessToken}`);
-
-      navigate("/dashboard/home");
+      login(user);
     } catch ({ response: { data, status } }) {
       if (status !== 422) {
         setAlert(data.message);
@@ -114,7 +112,7 @@ export function Login() {
               }}
               type={passwordShown ? "text" : "password"}
               icon={
-                <i onClick={togglePasswordVisiblity}>
+                <i onClick={() => setPasswordShown((cur) => !cur)}>
                   {passwordShown ? (
                     <EyeIcon className="h-5 w-5" />
                   ) : (

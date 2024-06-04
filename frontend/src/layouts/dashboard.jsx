@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -8,11 +8,17 @@ import {
   Footer,
 } from "@/widgets/layout";
 import routes from "@/routes";
+import { useAuth } from "@/hooks/useAuth";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 
 export function Dashboard() {
+  const { user } = useAuth();
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+
+  if(!user) {
+    return <Navigate to="/auth/login" replace/>;
+  }
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
@@ -24,8 +30,8 @@ export function Dashboard() {
       />
       <div className="p-4 xl:ml-80">
         <DashboardNavbar />
-        <Configurator />
-        <IconButton
+        {/* <Configurator /> */}
+        {/* <IconButton
           size="lg"
           color="white"
           className="fixed bottom-8 right-8 z-40 rounded-full shadow-blue-gray-900/10"
@@ -33,7 +39,7 @@ export function Dashboard() {
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
           <Cog6ToothIcon className="h-5 w-5" />
-        </IconButton>
+        </IconButton> */}
         <Routes>
           {routes.map(
             ({ layout, pages }) =>
@@ -43,9 +49,9 @@ export function Dashboard() {
               ))
           )}
         </Routes>
-        <div className="text-blue-gray-600">
+        {/* <div className="text-blue-gray-600">
           <Footer />
-        </div>
+        </div> */}
       </div>
     </div>
   );

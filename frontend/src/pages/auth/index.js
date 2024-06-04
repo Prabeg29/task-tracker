@@ -1,2 +1,2 @@
-export * from "@/pages/auth/login";
+export * from "@/pages/auth/Login";
 export * from "@/pages/auth/register";

@@ -1,39 +1,17 @@
-import { Routes, Route } from "react-router-dom";
-import {
-  ChartPieIcon,
-  UserIcon,
-  UserPlusIcon,
-  ArrowRightOnRectangleIcon,
-} from "@heroicons/react/24/solid";
-import { Navbar, Footer } from "@/widgets/layout";
+import { Navigate, Routes, Route } from "react-router-dom";
+
 import routes from "@/routes";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Auth() {
-  const navbarRoutes = [
-    {
-      name: "dashboard",
-      path: "/dashboard/home",
-      icon: ChartPieIcon,
-    },
-    {
-      name: "profile",
-      path: "/dashboard/home",
-      icon: UserIcon,
-    },
-    {
-      name: "sign up",
-      path: "/auth/sign-up",
-      icon: UserPlusIcon,
-    },
-    {
-      name: "sign in",
-      path: "/auth/sign-in",
-      icon: ArrowRightOnRectangleIcon,
-    },
-  ];
+  const { user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/dashboard/home" />;
+  }
 
   return (
-    <div className="relative min-h-screen w-full">
+    <div>
       <Routes>
         {routes.map(
           ({ layout, pages }) =>
