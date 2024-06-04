@@ -98,11 +98,8 @@ export function Tasks() {
       search,
       status,
     });
-    const tableData = tasks.map(task => ({
-      ...obj,
-      ...{ isExpanded: false },
-    }));
-    setTasks(tableData);
+    console.log(tasks, meta);
+    setTasks(tasks);
     setPagination(meta.paginationInfo);
   };
 
@@ -187,14 +184,18 @@ export function Tasks() {
                             >
                               {task.attributes.title}
                             </Typography>
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal opacity-70"
-                            >
-                              {task.relationships.createdBy.attributes.name}
-                            </Typography>
                           </div>
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {task.relationships.createdBy.attributes.name}
+                          </Typography>
                         </div>
                       </td>
                       <td className={classes}>
@@ -206,23 +207,17 @@ export function Tasks() {
                           >
                             {task.relationships.assignedTo.attributes.name}
                           </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
-                            {task.attributes.status}
-                          </Typography>
                         </div>
                       </td>
                       <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            variant="ghost"
-                            size="sm"
-                            value={online ? "online" : "offline"}
-                            color={online ? "green" : "blue-gray"}
-                          />
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {task.attributes.status}
+                          </Typography>
                         </div>
                       </td>
                       <td className={classes}>
@@ -241,7 +236,7 @@ export function Tasks() {
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {task.relationships.createdAt}
+                            {task.attributes.createdAt}
                           </Typography>
                         </div>
                       </td>
