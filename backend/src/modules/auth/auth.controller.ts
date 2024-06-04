@@ -11,7 +11,7 @@ export class AuthController {
   ) { }
 
   public register = async (req: Request, res: Response): Promise<void> => {
-    const user: User = await this.userService.create(req.body as CreateUserDto);
+    const user: User & { accessToken: string; }  = await this.userService.create(req.body as CreateUserDto);
 
     res.status(StatusCodes.CREATED)
       .json({ message: "Registration successful.", user: UserMapper.toResponseDto(user) });

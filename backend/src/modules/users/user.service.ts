@@ -13,7 +13,7 @@ export class UserService {
     protected readonly userRepository: UserRepositoryInterface
   ) {}
 
-  public async create(userData: CreateUserDto): Promise<User> {
+  public async create(userData: CreateUserDto): Promise<User & { accessToken: string; }> {
     const isExistingUser = await this.userRepository.fetchOneByEmail(userData.email);
 
     if (isExistingUser) {
@@ -22,7 +22,16 @@ export class UserService {
 
     userData.password = await bcrypt.hash(userData.password, 10);
 
-    return await this.userRepository.create(userData);
+    const user =  await this.userRepository.create(userData);
+
+    return {
+      ...user,
+      accessToken: jwt.sign(
+        { id: user.id, email: user.email, role: roles[user.role] }, 
+        config.secrets.jwt, 
+        { expiresIn: "10m" }
+      )
+    };
   }
 
   public async signin(userData: Partial<CreateUserDto>): Promise<User & { accessToken: string; }> {
