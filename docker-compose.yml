@@ -53,3 +53,20 @@ services:
       - ./backend:/home/task-tracker
     networks:
       - task-tracker
+
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    image: frontend_image
+    container_name: task-tracker_frontend
+    depends_on:
+      - backend
+    user: 1000:1000
+    working_dir: /home/task-tracker
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/home/task-tracker
+    networks:
+      - task-tracker
