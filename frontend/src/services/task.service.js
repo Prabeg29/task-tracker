@@ -3,7 +3,7 @@ import axios from "axios";
 let token;
 let user = window.localStorage.getItem("user");
 
-if (user) {
+if (user && user !== "null") {
   user = JSON.parse(user);
   token = `${user.type} ${user.accessToken}`
 }

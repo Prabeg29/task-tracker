@@ -1,9 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
+
 import {
-  MagnifyingGlassIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-import {
+  Alert,
   Card,
   CardHeader,
   Input,
@@ -11,21 +9,28 @@ import {
   Button,
   CardBody,
   CardFooter,
+  Spinner,
   Tabs,
   TabsHeader,
   Tab,
   IconButton,
   Tooltip,
 } from "@material-tailwind/react";
-import { useEffect, useMemo, useState } from "react";
+
+import {
+  MagnifyingGlassIcon,
+  ChevronUpDownIcon,
+} from "@heroicons/react/24/outline";
+import { InformationCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+
 import { debounce, camelCase } from "lodash";
 
-import { AddTaskForm } from "./components/AddTaskForm";
-import { EditTaskForm } from "./components/EditTaskForm";
+import { TaskForm } from "./components/TaskForm";
 
 import * as taskService from "@/services/task.service"
 
 export function Tasks() {
+  const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,26 +39,68 @@ export function Tasks() {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [task, setTask] = useState({
     "title": "",
     "description": "",
-    "assignedTo": 3,
+    "assignedTo": "",
   });
   const [errors, setErrors] = useState({
     "title": "",
     "description": "",
     "assignedTo": "",
   });
+  const [alert, setAlert] = useState({
+    "color": "",
+    "message": ""
+  });
 
   const TABS = [
-    { label: "All", value: "" },
+    { label: "All", value: "all" },
     { label: "Todo", value: "todo" },
     { label: "WIP", value: "wip" },
     { label: "Complete", value: "complete" },
   ];
 
   const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
+
+  useEffect(() => {
+    fetchTasks();
+  }, [currentPage, search, status, sortBy, sortOrder]);
+
+  const fetchTasks = async () => {
+    setIsLoading(true);
+
+    try {
+      const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
+        currentPage,
+        perPage: 25,
+        search,
+        status,
+        sortBy,
+        sortOrder
+      });
+  
+      setTasks(tasks);
+      setPagination(meta.paginationInfo);
+    } catch ({ response: { data, status }  }) {
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
+      console.error(data.message);
+    }
+
+    setIsLoading(false);
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
+  };
 
   const handleSort = (sortColumn) => {
     const newSortBy = camelCase(sortColumn);
@@ -62,17 +109,17 @@ export function Tasks() {
     setSortOrder(newSortDirection);
   };
 
-  const handleOpen = () => {
-    setTask({
+  const handleOpen = (task = null) => {
+    setIsEdit(false);
+
+    setErrors({
       "title": "",
       "description": "",
       "assignedTo": "",
-    });
-    setOpen((cur) => !cur);
-  }
+    })
 
-  const handleEdit = (task = null) => { 
     if (task) {
+      setIsEdit(true);
       setTask({
         "id": task.id,
         "title": task.attributes.title,
@@ -80,69 +127,35 @@ export function Tasks() {
         "assignedTo": task.relationships.assignedTo.id,
         "status": task.attributes.status,
       });
-    }
-    
-    setEdit((cur) => !cur);
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, [currentPage, search, status, sortBy, sortOrder]);
-
-  const fetchTasks = async () => {
-    const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
-      currentPage,
-      perPage: 25,
-      search,
-      status,
-      sortBy,
-      sortOrder
-    });
-
-    setTasks(tasks);
-    setPagination(meta.paginationInfo);
-  };
-
-  const debouncedSearch = useMemo(() => {
-    return debounce((e) => setSearch(e.target.value), 500);
-  }, []);
-
-  const handleTaskCreate = async (event) => {
-    event.preventDefault();
-
-    let hasError = false;
-    Object.values(errors).forEach((error) => {
-      if (error.length > 0) {
-        hasError = true;
-      }
-    });
-
-    if (hasError) {
-      return;
-    }
-
-    try {
-      await taskService.create({ ...task, "assignedTo": 3 });
-      handleOpen();
+    } else {
       setTask({
         "title": "",
         "description": "",
         "assignedTo": "",
       });
-      setErrors({
-        "title": "",
-        "description": "",
-        "assignedTo": "",
-      })
-      await fetchTasks();
-    } catch ({ response: { data, status } }) {
-      console.err(data.message);
+    }
+
+    setOpen((cur) => !cur);
+  }
+
+  const debouncedSearch = useMemo(() => {
+    return debounce((e) => setSearch(e.target.value), 500);
+  }, []);
+
+  const validate = (field, value) => {
+    switch (field) {
+      case "title":
+        return value.length === 0 ? "Title is required" : "";
+      default:
+        return "";
     }
   };
 
-  const handleTaskEdit = async (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
 
+    setErrors((prevErrors) => ({ ...prevErrors, ["title"]: validate("title", task.title) }));
+    
     let hasError = false;
     Object.values(errors).forEach((error) => {
       if (error.length > 0) {
@@ -155,50 +168,90 @@ export function Tasks() {
     }
 
     try {
-      const id = task.id;
-      delete task.id;
-      await taskService.update(id, { ...task, "assignedTo": 3 });
-      handleEdit();
+      if (isEdit) {
+        const id = task.id;
+        delete task.id;
+        await taskService.update(id, { ...task, assignedTo: Number(task.assignedTo) });
+      } else {
+        await taskService.create({ ...task, assignedTo: Number(task.assignedTo) });
+      }
+      setAlert({
+        "message": "Success: Task saved",
+        "color": "green"
+      })
+      handleOpen();
       await fetchTasks();
+      
     } catch ({ response: { data, status } }) {
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
       console.err(data.message);
     }
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   const handleTaskDelete = async (id) => {
     try {
       await taskService.destroy(id);
+      setAlert({
+        "message": "Success: Task deleted",
+        "color": "green"
+      })
       await fetchTasks();
     } catch ({ response: { data, status } }) {
-      console.err(data.message);
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
+      console.error(data.message);
     }
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
+      {isLoading && (<div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+        < Spinner color="white" />
+      </div>)}
       {open &&
-        <AddTaskForm
+        <TaskForm
+          isEdit={isEdit}
           open={open}
           handleOpen={handleOpen}
-          task={task}
-          setTask={setTask}
-          errors={errors}
-          setErrors={setErrors}
-          handleTaskCreate={handleTaskCreate}
-        />}
-      {
-        edit &&
-        <EditTaskForm
-          edit={edit}
-          handleEdit={handleEdit}
           statuses={TABS}
           task={task}
           setTask={setTask}
+          validate={validate}
           errors={errors}
           setErrors={setErrors}
-          handleTaskEdit={handleTaskEdit}
-        />
-      }
+          handleSave={handleSave}
+        />}
+      <Alert
+        open={alert.message.length > 0} 
+        onClose={() => setAlert({ "message": "", color: "" })}
+        color={alert.color}
+        icon={
+          <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
+        }
+      >
+        {alert.message}
+      </Alert>
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
@@ -208,7 +261,7 @@ export function Tasks() {
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button className="flex items-center gap-3" size="sm" onClick={handleOpen}>
+              <Button className="flex items-center gap-3" size="sm" onClick={() => handleOpen()}>
                 Add task
               </Button>
             </div>
@@ -335,7 +388,7 @@ export function Tasks() {
                       </td>
                       <td className={classes}>
                         <Tooltip content="Edit Task">
-                          <IconButton variant="text" onClick={() => handleEdit(task)}>
+                          <IconButton variant="text" onClick={() => handleOpen(task)}>
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>
