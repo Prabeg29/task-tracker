@@ -1,11 +1,11 @@
+import { useState } from "react";
 import {
   Alert,
   Input,
   Button,
   Typography,
 } from "@material-tailwind/react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -17,7 +17,6 @@ export function Login() {
   const [passwordShown, setPasswordShown] = useState(false);
   const [alert, setAlert] = useState("");
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleChange = (event) => {
     setAlert("");

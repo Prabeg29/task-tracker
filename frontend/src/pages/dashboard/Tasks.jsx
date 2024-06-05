@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  Alert,
   Card,
   CardHeader,
   Input,
@@ -20,7 +21,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { InformationCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { debounce, camelCase } from "lodash";
 
@@ -49,14 +50,10 @@ export function Tasks() {
     "description": "",
     "assignedTo": "",
   });
-  const validate = (field, value) => {
-    switch (field) {
-      case "title":
-        return value.length === 0 ? "Title is required" : "";
-      default:
-        return "";
-    }
-  };
+  const [alert, setAlert] = useState({
+    "color": "",
+    "message": ""
+  });
 
   const TABS = [
     { label: "All", value: "all" },
@@ -73,18 +70,36 @@ export function Tasks() {
 
   const fetchTasks = async () => {
     setIsLoading(true);
-    const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
-      currentPage,
-      perPage: 25,
-      search,
-      status,
-      sortBy,
-      sortOrder
-    });
 
-    setTasks(tasks);
-    setPagination(meta.paginationInfo);
+    try {
+      const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
+        currentPage,
+        perPage: 25,
+        search,
+        status,
+        sortBy,
+        sortOrder
+      });
+  
+      setTasks(tasks);
+      setPagination(meta.paginationInfo);
+    } catch ({ response: { data, status }  }) {
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
+      console.error(data.message);
+    }
+
     setIsLoading(false);
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   const handleSort = (sortColumn) => {
@@ -93,6 +108,7 @@ export function Tasks() {
     setSortBy(newSortBy);
     setSortOrder(newSortDirection);
   };
+
   const handleOpen = (task = null) => {
     setIsEdit(false);
 
@@ -126,6 +142,15 @@ export function Tasks() {
     return debounce((e) => setSearch(e.target.value), 500);
   }, []);
 
+  const validate = (field, value) => {
+    switch (field) {
+      case "title":
+        return value.length === 0 ? "Title is required" : "";
+      default:
+        return "";
+    }
+  };
+
   const handleSave = async (event) => {
     event.preventDefault();
 
@@ -145,24 +170,58 @@ export function Tasks() {
     try {
       if (isEdit) {
         const id = task.id;
-        await taskService.update(id, task);
-    } else {
-      await taskService.create(task);
-    }
+        delete task.id;
+        await taskService.update(id, { ...task, assignedTo: Number(task.assignedTo) });
+      } else {
+        await taskService.create({ ...task, assignedTo: Number(task.assignedTo) });
+      }
+      setAlert({
+        "message": "Success: Task saved",
+        "color": "green"
+      })
       handleOpen();
       await fetchTasks();
+      
     } catch ({ response: { data, status } }) {
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
       console.err(data.message);
     }
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   const handleTaskDelete = async (id) => {
     try {
       await taskService.destroy(id);
+      setAlert({
+        "message": "Success: Task deleted",
+        "color": "green"
+      })
       await fetchTasks();
     } catch ({ response: { data, status } }) {
-      console.err(data.message);
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
+      console.error(data.message);
     }
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   return (
@@ -183,6 +242,16 @@ export function Tasks() {
           setErrors={setErrors}
           handleSave={handleSave}
         />}
+      <Alert
+        open={alert.message.length > 0} 
+        onClose={() => setAlert({ "message": "", color: "" })}
+        color={alert.color}
+        icon={
+          <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
+        }
+      >
+        {alert.message}
+      </Alert>
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">

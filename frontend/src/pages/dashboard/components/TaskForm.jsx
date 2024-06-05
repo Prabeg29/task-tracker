@@ -45,7 +45,7 @@ export const TaskForm = ({
   };
 
   const handleSelectChange = (name, value) => {
-    setInputs((prevInputs) => ({ ...prevInputs, [name]: Number(value) }));
+    setTask((prevInputs) => ({ ...prevInputs, [name]: value }));
   };
 
   return (
@@ -87,10 +87,10 @@ export const TaskForm = ({
             <Select
               label="Assigned To"
               name="assignedTo"
-              value={task.assignedTo}
-              onChange={(e) => handleSelectChange("assignedTo", e.target.value)}
+              value={task.assignedTo.toString()}
+              onChange={value => handleSelectChange("assignedTo", value)}
             >
-              { assignedTo.map(user => (<Option key={user.id} value={user.id}>{user.attributes.name}</Option>))}
+              { assignedTo.map(user => (<Option key={user.id.toString()} value={user.id.toString()}>{user.attributes.name}</Option>))}
             </Select>
           </div>
           {isEdit && (
@@ -99,7 +99,7 @@ export const TaskForm = ({
                 label="Status"
                 name="status"
                 value={task.status}
-                onChange={(e) => handleSelectChange("status", e.target.value)}
+                onChange={value => handleSelectChange("status", value)}
               >
                 { statuses.filter(s => s.value !== "all").map(s => (<Option key={s.value} value={s.value}>{s.label}</Option>))}
               </Select>
