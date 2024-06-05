@@ -17,7 +17,8 @@ import {
   IconButton,
   Tooltip,
 } from "@material-tailwind/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { debounce } from "lodash";
 
 import { AddTaskForm } from "./components/AddTaskForm";
 
@@ -93,7 +94,7 @@ export function Tasks() {
 
   useEffect(() => {
     fetchTasks()
-  }, [currentPage]);
+  }, [currentPage, search]);
 
   const fetchTasks = async () => {
     const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
@@ -107,6 +108,10 @@ export function Tasks() {
     setPagination(meta.paginationInfo);
   };
 
+
+  const debouncedSearch = useMemo(() => {
+    return debounce((e) => setSearch(e.target.value), 500);
+  }, []);
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -139,6 +144,8 @@ export function Tasks() {
               <Input
                 label="Search"
                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                name="search"
+                onChange={debouncedSearch}
               />
             </div>
           </div>
