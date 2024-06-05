@@ -25,4 +25,6 @@ const create = async (payload) => axiosInstance.post("/tasks", payload);
 
 const update = async (id, payload) => axiosInstance.put(`/tasks/${id}`, payload);
 
-export { fetchAllPaginated, create, update };
+const destroy = async (id) => axiosInstance.delete(`/tasks/${id}`);
+
+export { fetchAllPaginated, create, update, destroy };

@@ -2,7 +2,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
@@ -159,6 +159,15 @@ export function Tasks() {
       delete task.id;
       await taskService.update(id, { ...task, "assignedTo": 3 });
       handleEdit();
+      await fetchTasks();
+    } catch ({ response: { data, status } }) {
+      console.err(data.message);
+    }
+  };
+
+  const handleTaskDelete = async (id) => {
+    try {
+      await taskService.destroy(id);
       await fetchTasks();
     } catch ({ response: { data, status } }) {
       console.err(data.message);
@@ -328,6 +337,11 @@ export function Tasks() {
                         <Tooltip content="Edit Task">
                           <IconButton variant="text" onClick={() => handleEdit(task)}>
                             <PencilIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip content="Delete Task">
+                          <IconButton variant="text" onClick={() => handleTaskDelete(task.id)}>
+                            <TrashIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>
                       </td>
