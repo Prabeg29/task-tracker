@@ -20,12 +20,17 @@ export const AuthProvider = ({ children }) => {
     navigate("/dashboard/tasks", { replace: true });
   };
 
+  const register = (data) => {
+    setUser(data);
+    navigate("/dashboard/tasks", { replace: true });
+  };
+
   const logout = () => {
     setUser(null);
     navigate("/auth/login", { replace: true });
   };
 
-  const value = useMemo(() => ({ user, login, logout }), [user]);
+  const value = useMemo(() => ({ user, login, register, logout }), [user]);
 
   return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);
 };

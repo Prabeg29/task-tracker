@@ -7,32 +7,25 @@ import {
   Select,
   Typography,
 } from "@material-tailwind/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
+import { useAuth } from "@/hooks/useAuth";
 import * as authService from "@/services/auth.service";
 
 export function Register() {
-  const navigate = useNavigate();
-  const [alert, setAlert] = useState("");
+  const { register } = useAuth();
   const [inputs, setInputs] = useState({
     name: "",
     email: "",
     password: "",
     role: 2
   });
-
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     password: "",
   });
-
-  const handleChange = (event) => {
-    setAlert("");
-    const { name, value } = event.target;
-    setInputs((prevInputs) => ({ ...prevInputs, [name]: value }));
-    setErrors((prevErrors) => ({ ...prevErrors, [name]: validate(name, value) }));
-  };
+  const [alert, setAlert] = useState("");
 
   const validate = (field, value) => {
     switch (field) {
@@ -50,8 +43,23 @@ export function Register() {
     }
   };
 
+  const handleChange = (event) => {
+    setAlert("");
+    const { name, value } = event.target;
+    setInputs((prevInputs) => ({ ...prevInputs, [name]: value }));
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: validate(name, value) }));
+  };
+
+  const handleSelectChange = (value) => {
+    setInputs((prevInputs) => ({ ...prevInputs, role: Number(value) }));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setErrors((prevErrors) => ({ ...prevErrors, ["name"]: validate("name", inputs.name) }));
+    setErrors((prevErrors) => ({ ...prevErrors, ["email"]: validate("email", inputs.email) }));
+    setErrors((prevErrors) => ({ ...prevErrors, ["password"]: validate("password", inputs.password) }));
 
     let hasError = false;
     Object.values(errors).forEach((error) => {
@@ -65,11 +73,9 @@ export function Register() {
     }
 
     try {
-      const { data } = await authService.register(inputs);
+      const { data: { user } } = await authService.register(inputs);
 
-      localStorage.setItem("token", JSON.stringify(`${data.user.type} ${data.user.accessToken}`));
-
-      navigate("/dashboard/home");
+      register(user);
     } catch ({ response: { data, status } }) {
       if (status !== 422) {
         setAlert(data.message);
@@ -143,7 +149,7 @@ export function Register() {
               </Typography>
             )}
           </div>
-          <div className="mb-1 flex flex-col gap-6">
+          <div className="mb-5 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-4 font-medium">
               Password
             </Typography>
@@ -170,11 +176,12 @@ export function Register() {
               Role
             </Typography>
             <Select
-              value={inputs.role}
-              onChange={handleChange}
+              name="role"
+              value={inputs.role.toString()}
+              onChange={(value) => handleSelectChange(value)}
             >
-              <Option value={2}>ADMIN</Option>
-              <Option value={3}>MEMBER</Option>
+              <Option value="2">ADMIN</Option>
+              <Option value="3">MEMBER</Option>
             </Select>
           </div>
           <Button className="mt-6" fullWidth type="submit">
