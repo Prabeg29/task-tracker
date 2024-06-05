@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { debounce, camelCase } from "lodash";
 
 import { AddTaskForm } from "./components/AddTaskForm";
+import { EditTaskForm } from "./components/EditTaskForm";
 
 import * as taskService from "@/services/task.service"
 
@@ -33,6 +34,7 @@ export function Tasks() {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [open, setOpen] = useState(false);
+  const [edit, setEdit] = useState(false);
   const [task, setTask] = useState({
     "title": "",
     "description": "",
@@ -61,17 +63,26 @@ export function Tasks() {
   };
 
   const handleOpen = () => {
-    setOpen((cur) => !cur);
     setTask({
       "title": "",
       "description": "",
       "assignedTo": "",
     });
-    setErrors({
-      "title": "",
-      "description": "",
-      "assignedTo": "",
-    })
+    setOpen((cur) => !cur);
+  }
+
+  const handleEdit = (task = null) => { 
+    if (task) {
+      setTask({
+        "id": task.id,
+        "title": task.attributes.title,
+        "description": task.attributes.description,
+        "assignedTo": task.relationships.assignedTo.id,
+        "status": task.attributes.status,
+      });
+    }
+    
+    setEdit((cur) => !cur);
   };
 
   useEffect(() => {
@@ -111,7 +122,7 @@ export function Tasks() {
     }
 
     try {
-      await taskService.create({ ...task, "assignedTo": 3});
+      await taskService.create({ ...task, "assignedTo": 3 });
       handleOpen();
       setTask({
         "title": "",
@@ -123,6 +134,31 @@ export function Tasks() {
         "description": "",
         "assignedTo": "",
       })
+      await fetchTasks();
+    } catch ({ response: { data, status } }) {
+      console.err(data.message);
+    }
+  };
+
+  const handleTaskEdit = async (event) => {
+    event.preventDefault();
+
+    let hasError = false;
+    Object.values(errors).forEach((error) => {
+      if (error.length > 0) {
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      return;
+    }
+
+    try {
+      const id = task.id;
+      delete task.id;
+      await taskService.update(id, { ...task, "assignedTo": 3 });
+      handleEdit();
       await fetchTasks();
     } catch ({ response: { data, status } }) {
       console.err(data.message);
@@ -141,6 +177,19 @@ export function Tasks() {
           setErrors={setErrors}
           handleTaskCreate={handleTaskCreate}
         />}
+      {
+        edit &&
+        <EditTaskForm
+          edit={edit}
+          handleEdit={handleEdit}
+          statuses={TABS}
+          task={task}
+          setTask={setTask}
+          errors={errors}
+          setErrors={setErrors}
+          handleTaskEdit={handleTaskEdit}
+        />
+      }
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
@@ -276,8 +325,8 @@ export function Tasks() {
                         </div>
                       </td>
                       <td className={classes}>
-                        <Tooltip content="Edit User">
-                          <IconButton variant="text">
+                        <Tooltip content="Edit Task">
+                          <IconButton variant="text" onClick={() => handleEdit(task)}>
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>

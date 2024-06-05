@@ -14,14 +14,15 @@ import { useEffect, useState } from "react";
 
 import * as userService from "@/services/user.service"
 
-export const AddTaskForm =  ({ 
-  open,
-  handleOpen,
+export const EditTaskForm =  ({ 
+  edit,
+  handleEdit,
+  statuses,
   task,
   setTask,
   errors,
   setErrors,
-  handleTaskCreate
+  handleTaskEdit
 }) => {
   const [assignedTo, setAssignedTo] = useState([]);
 
@@ -52,7 +53,7 @@ export const AddTaskForm =  ({
 
   return (
     <section className="grid place-items-center h-screen">
-      <Dialog className="p-4" size="md" open={open} handler={handleOpen}>
+      <Dialog className="p-4" size="md" open={edit} handler={() => handleEdit()}>
         <DialogHeader className="justify-between">
           <Typography color="blue-gray" className="mb-1 font-bold">
             Add task
@@ -89,19 +90,29 @@ export const AddTaskForm =  ({
             <Select
               label="Assigned To"
               name="assignedTo"
-              value={task.assignedTo}
+              value={task.assignedTo.toString()}
               onChange={handleChange}
             >
               { assignedTo.map(user => (<Option key={user.id} value={user.id}>{user.attributes.name}</Option>))}
             </Select>
           </div>
+          <div className="mb-3 flex flex-col gap-6">
+            <Select
+              label="Status"
+              name="status"
+              value={task.status}
+              onChange={handleChange}
+            >
+              { statuses.map(s => (<Option key={s.value} value={s.value}>{s.label}</Option>))}
+            </Select>
+          </div>
         </DialogBody>
         <DialogFooter className="space-x-2">
-          <Button variant="text" color="blue-gray" onClick={handleOpen}>
+          <Button variant="text" color="blue-gray" onClick={() => handleEdit()}>
             close
           </Button>
-          <Button variant="gradient" onClick={handleTaskCreate}>
-            Add
+          <Button variant="gradient" onClick={handleTaskEdit}>
+            Save
           </Button>
         </DialogFooter>
       </Dialog>

@@ -23,4 +23,6 @@ const fetchAllPaginated = async ({ search, status, currentPage, perPage, sortBy,
 
 const create = async (payload) => axiosInstance.post("/tasks", payload);
 
-export { fetchAllPaginated, create };
+const update = async (id, payload) => axiosInstance.put(`/tasks/${id}`, payload);
+
+export { fetchAllPaginated, create, update };
