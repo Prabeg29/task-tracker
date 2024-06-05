@@ -38,8 +38,8 @@ const paginate = async <T>(
     perPage,
     currentPage,
     lastPage,
-    prevPage: currentPage > 1 ? currentPage - 1 : undefined,
-    nextPage: currentPage < lastPage ? currentPage + 1 : undefined,
+    prevPage: currentPage > 1 ? currentPage - 1 : null,
+    nextPage: currentPage < lastPage ? currentPage + 1 : null,
   };
 
   return { data, paginationInfo };

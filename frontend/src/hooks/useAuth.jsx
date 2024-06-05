@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = (data) => {
     setUser(data);
-    navigate("/dashboard/tables");
+    navigate("/dashboard/tasks", { replace: true });
   };
 
   const logout = () => {

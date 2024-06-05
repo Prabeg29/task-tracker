@@ -10,7 +10,6 @@ import {
   Typography,
   Button,
   CardBody,
-  Chip,
   CardFooter,
   Tabs,
   TabsHeader,
@@ -19,6 +18,8 @@ import {
   Tooltip,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
+
+import { AddTaskForm } from "./components/AddTaskForm";
 
 import * as taskService from "@/services/task.service"
 
@@ -70,13 +71,16 @@ const TABLE_ROWS = [
   },
 ];
 
+
 export function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [pagination, setPagination] = useState({});
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen((cur) => !cur);
 
   const TABS = [
     { label: "All", value: "all" },
@@ -94,21 +98,19 @@ export function Tasks() {
   const fetchTasks = async () => {
     const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
       currentPage,
-      perPage,
+      perPage: 25,
       search,
       status,
     });
-    console.log(tasks, meta);
+
     setTasks(tasks);
     setPagination(meta.paginationInfo);
   };
 
-  const handleChangePage = (event, page) => {
-    setPage(page);
-  };
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
+      {open && <AddTaskForm open={open} handleOpen={handleOpen} />}
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
@@ -118,7 +120,7 @@ export function Tasks() {
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button className="flex items-center gap-3" size="sm">
+              <Button className="flex items-center gap-3" size="sm" onClick={handleOpen}>
                 <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add task
               </Button>
             </div>
@@ -256,13 +258,23 @@ export function Tasks() {
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page 1 of 10
+            Page {currentPage} of {pagination.total}
           </Typography>
           <div className="flex gap-2">
-            <Button variant="outlined" size="sm">
+            <Button
+              variant="outlined"
+              size="sm"
+              disabled={!pagination.prevPage}
+              onClick={() => setCurrentPage(currentPage => currentPage - 1)}
+            >
               Previous
             </Button>
-            <Button variant="outlined" size="sm">
+            <Button
+              variant="outlined"
+              size="sm"
+              disabled={!pagination.nextPage}
+              onClick={() => setCurrentPage(currentPage => currentPage + 1)}
+            >
               Next
             </Button>
           </div>
