@@ -27,7 +27,7 @@ export class UserMapper {
     };
   }
 
-  public static toResponseDtoDtoCollection(users: User[]): Array<UserResponseDto> {
+  public static toResponseDtoCollection(users: User[]): Array<UserResponseDto> {
     return users.map(user => {
       return {
         ...UserMapper.toResponseDto(user),

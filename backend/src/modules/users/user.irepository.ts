@@ -4,4 +4,5 @@ export interface UserRepositoryInterface {
   fetchOneByEmail(email: string): Promise<User | undefined>;
   fetchOneById(id: number): Promise<User | undefined>;
   create(userData: CreateUserDto): Promise<User>;
+  fetchAll(): Promise<User[]>;
 };

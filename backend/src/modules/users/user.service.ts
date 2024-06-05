@@ -29,7 +29,7 @@ export class UserService {
       accessToken: jwt.sign(
         { id: user.id, email: user.email, role: roles[user.role] }, 
         config.secrets.jwt, 
-        { expiresIn: "10m" }
+        { expiresIn: "1 day" }
       )
     };
   }
@@ -55,5 +55,9 @@ export class UserService {
         { expiresIn: "10m" }
       )
     };
+  }
+
+  public async fetchAll(): Promise<User[]> {
+    return await this.userRepository.fetchAll();
   }
 }
