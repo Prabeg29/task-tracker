@@ -7,7 +7,7 @@ export function Auth() {
   const { user } = useAuth();
 
   if (user) {
-    return <Navigate to="/dashboard/home" />;
+    return <Navigate to="/dashboard/tasks" />;
   }
 
   return (
