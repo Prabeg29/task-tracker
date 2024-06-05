@@ -17,10 +17,6 @@ const axiosInstance = axios.create({
   }
 });
 
-const fetchAllPaginated = async ({ search, status, currentPage, perPage, sortBy, sortOrder }) => axiosInstance.get(
-  `/tasks?search=${search}&status=${status}&currentPage=${currentPage}&perPage=${perPage}&sortBy=${sortBy}&sortOrder=${sortOrder}`
-);
+const fetchAll = async () => axiosInstance.get("/users");
 
-const create = async (payload) => axiosInstance.post("/tasks", payload);
-
-export { fetchAllPaginated, create };
+export { fetchAll };

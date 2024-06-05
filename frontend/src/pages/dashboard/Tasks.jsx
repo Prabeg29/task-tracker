@@ -2,7 +2,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
 import {
   Card,
   CardHeader,
@@ -33,6 +33,16 @@ export function Tasks() {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [open, setOpen] = useState(false);
+  const [task, setTask] = useState({
+    "title": "",
+    "description": "",
+    "assignedTo": 3,
+  });
+  const [errors, setErrors] = useState({
+    "title": "",
+    "description": "",
+    "assignedTo": "",
+  });
 
   const TABS = [
     { label: "All", value: "" },
@@ -50,7 +60,19 @@ export function Tasks() {
     setSortOrder(newSortDirection);
   };
 
-  const handleOpen = () => setOpen((cur) => !cur);
+  const handleOpen = () => {
+    setOpen((cur) => !cur);
+    setTask({
+      "title": "",
+      "description": "",
+      "assignedTo": "",
+    });
+    setErrors({
+      "title": "",
+      "description": "",
+      "assignedTo": "",
+    })
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -74,9 +96,51 @@ export function Tasks() {
     return debounce((e) => setSearch(e.target.value), 500);
   }, []);
 
+  const handleTaskCreate = async (event) => {
+    event.preventDefault();
+
+    let hasError = false;
+    Object.values(errors).forEach((error) => {
+      if (error.length > 0) {
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      return;
+    }
+
+    try {
+      await taskService.create({ ...task, "assignedTo": 3});
+      handleOpen();
+      setTask({
+        "title": "",
+        "description": "",
+        "assignedTo": "",
+      });
+      setErrors({
+        "title": "",
+        "description": "",
+        "assignedTo": "",
+      })
+      await fetchTasks();
+    } catch ({ response: { data, status } }) {
+      console.err(data.message);
+    }
+  };
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-      {open && <AddTaskForm open={open} handleOpen={handleOpen} />}
+      {open &&
+        <AddTaskForm
+          open={open}
+          handleOpen={handleOpen}
+          task={task}
+          setTask={setTask}
+          errors={errors}
+          setErrors={setErrors}
+          handleTaskCreate={handleTaskCreate}
+        />}
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
@@ -87,7 +151,7 @@ export function Tasks() {
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
               <Button className="flex items-center gap-3" size="sm" onClick={handleOpen}>
-                <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add task
+                Add task
               </Button>
             </div>
           </div>
