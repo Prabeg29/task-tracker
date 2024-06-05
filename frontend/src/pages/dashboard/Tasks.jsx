@@ -1,8 +1,5 @@
-import {
-  MagnifyingGlassIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { useEffect, useMemo, useState } from "react";
+
 import {
   Card,
   CardHeader,
@@ -11,13 +8,20 @@ import {
   Button,
   CardBody,
   CardFooter,
+  Spinner,
   Tabs,
   TabsHeader,
   Tab,
   IconButton,
   Tooltip,
 } from "@material-tailwind/react";
-import { useEffect, useMemo, useState } from "react";
+
+import {
+  MagnifyingGlassIcon,
+  ChevronUpDownIcon,
+} from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+
 import { debounce, camelCase } from "lodash";
 
 import { AddTaskForm } from "./components/AddTaskForm";
@@ -26,6 +30,7 @@ import { EditTaskForm } from "./components/EditTaskForm";
 import * as taskService from "@/services/task.service"
 
 export function Tasks() {
+  const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,13 +52,33 @@ export function Tasks() {
   });
 
   const TABS = [
-    { label: "All", value: "" },
+    { label: "All", value: "all" },
     { label: "Todo", value: "todo" },
     { label: "WIP", value: "wip" },
     { label: "Complete", value: "complete" },
   ];
 
   const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
+
+  useEffect(() => {
+    fetchTasks();
+  }, [currentPage, search, status, sortBy, sortOrder]);
+
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
+      currentPage,
+      perPage: 25,
+      search,
+      status,
+      sortBy,
+      sortOrder
+    });
+
+    setTasks(tasks);
+    setPagination(meta.paginationInfo);
+    setIsLoading(false);
+  };
 
   const handleSort = (sortColumn) => {
     const newSortBy = camelCase(sortColumn);
@@ -71,7 +96,7 @@ export function Tasks() {
     setOpen((cur) => !cur);
   }
 
-  const handleEdit = (task = null) => { 
+  const handleEdit = (task = null) => {
     if (task) {
       setTask({
         "id": task.id,
@@ -81,26 +106,8 @@ export function Tasks() {
         "status": task.attributes.status,
       });
     }
-    
+
     setEdit((cur) => !cur);
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, [currentPage, search, status, sortBy, sortOrder]);
-
-  const fetchTasks = async () => {
-    const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
-      currentPage,
-      perPage: 25,
-      search,
-      status,
-      sortBy,
-      sortOrder
-    });
-
-    setTasks(tasks);
-    setPagination(meta.paginationInfo);
   };
 
   const debouncedSearch = useMemo(() => {
@@ -176,6 +183,9 @@ export function Tasks() {
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
+      {isLoading && (<div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+        < Spinner color="white" />
+      </div>)}
       {open &&
         <AddTaskForm
           open={open}
