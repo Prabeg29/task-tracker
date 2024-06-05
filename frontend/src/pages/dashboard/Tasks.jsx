@@ -24,8 +24,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { debounce, camelCase } from "lodash";
 
-import { AddTaskForm } from "./components/AddTaskForm";
-import { EditTaskForm } from "./components/EditTaskForm";
+import { TaskForm } from "./components/TaskForm";
 
 import * as taskService from "@/services/task.service"
 
@@ -39,17 +38,25 @@ export function Tasks() {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [task, setTask] = useState({
     "title": "",
     "description": "",
-    "assignedTo": 3,
+    "assignedTo": "",
   });
   const [errors, setErrors] = useState({
     "title": "",
     "description": "",
     "assignedTo": "",
   });
+  const validate = (field, value) => {
+    switch (field) {
+      case "title":
+        return value.length === 0 ? "Title is required" : "";
+      default:
+        return "";
+    }
+  };
 
   const TABS = [
     { label: "All", value: "all" },
@@ -86,18 +93,17 @@ export function Tasks() {
     setSortBy(newSortBy);
     setSortOrder(newSortDirection);
   };
+  const handleOpen = (task = null) => {
+    setIsEdit(false);
 
-  const handleOpen = () => {
-    setTask({
+    setErrors({
       "title": "",
       "description": "",
       "assignedTo": "",
-    });
-    setOpen((cur) => !cur);
-  }
+    })
 
-  const handleEdit = (task = null) => {
     if (task) {
+      setIsEdit(true);
       setTask({
         "id": task.id,
         "title": task.attributes.title,
@@ -105,51 +111,26 @@ export function Tasks() {
         "assignedTo": task.relationships.assignedTo.id,
         "status": task.attributes.status,
       });
-    }
-
-    setEdit((cur) => !cur);
-  };
-
-  const debouncedSearch = useMemo(() => {
-    return debounce((e) => setSearch(e.target.value), 500);
-  }, []);
-
-  const handleTaskCreate = async (event) => {
-    event.preventDefault();
-
-    let hasError = false;
-    Object.values(errors).forEach((error) => {
-      if (error.length > 0) {
-        hasError = true;
-      }
-    });
-
-    if (hasError) {
-      return;
-    }
-
-    try {
-      await taskService.create({ ...task, "assignedTo": 3 });
-      handleOpen();
+    } else {
       setTask({
         "title": "",
         "description": "",
         "assignedTo": "",
       });
-      setErrors({
-        "title": "",
-        "description": "",
-        "assignedTo": "",
-      })
-      await fetchTasks();
-    } catch ({ response: { data, status } }) {
-      console.err(data.message);
     }
-  };
 
-  const handleTaskEdit = async (event) => {
+    setOpen((cur) => !cur);
+  }
+
+  const debouncedSearch = useMemo(() => {
+    return debounce((e) => setSearch(e.target.value), 500);
+  }, []);
+
+  const handleSave = async (event) => {
     event.preventDefault();
 
+    setErrors((prevErrors) => ({ ...prevErrors, ["title"]: validate("title", task.title) }));
+    
     let hasError = false;
     Object.values(errors).forEach((error) => {
       if (error.length > 0) {
@@ -162,10 +143,13 @@ export function Tasks() {
     }
 
     try {
-      const id = task.id;
-      delete task.id;
-      await taskService.update(id, { ...task, "assignedTo": 3 });
-      handleEdit();
+      if (isEdit) {
+        const id = task.id;
+        await taskService.update(id, task);
+    } else {
+      await taskService.create(task);
+    }
+      handleOpen();
       await fetchTasks();
     } catch ({ response: { data, status } }) {
       console.err(data.message);
@@ -187,28 +171,18 @@ export function Tasks() {
         < Spinner color="white" />
       </div>)}
       {open &&
-        <AddTaskForm
+        <TaskForm
+          isEdit={isEdit}
           open={open}
           handleOpen={handleOpen}
-          task={task}
-          setTask={setTask}
-          errors={errors}
-          setErrors={setErrors}
-          handleTaskCreate={handleTaskCreate}
-        />}
-      {
-        edit &&
-        <EditTaskForm
-          edit={edit}
-          handleEdit={handleEdit}
           statuses={TABS}
           task={task}
           setTask={setTask}
+          validate={validate}
           errors={errors}
           setErrors={setErrors}
-          handleTaskEdit={handleTaskEdit}
-        />
-      }
+          handleSave={handleSave}
+        />}
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <div className="mb-8 flex items-center justify-between gap-8">
@@ -218,7 +192,7 @@ export function Tasks() {
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button className="flex items-center gap-3" size="sm" onClick={handleOpen}>
+              <Button className="flex items-center gap-3" size="sm" onClick={() => handleOpen()}>
                 Add task
               </Button>
             </div>
@@ -345,7 +319,7 @@ export function Tasks() {
                       </td>
                       <td className={classes}>
                         <Tooltip content="Edit Task">
-                          <IconButton variant="text" onClick={() => handleEdit(task)}>
+                          <IconButton variant="text" onClick={() => handleOpen(task)}>
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>
