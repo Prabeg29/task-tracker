@@ -93,7 +93,7 @@ export function Tasks() {
 
   useEffect(() => {
     fetchTasks()
-  }, []);
+  }, [currentPage]);
 
   const fetchTasks = async () => {
     const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
