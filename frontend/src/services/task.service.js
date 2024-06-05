@@ -17,8 +17,8 @@ const axiosInstance = axios.create({
   }
 });
 
-const fetchAllPaginated = async ({ search, status, currentPage, perPage }) => axiosInstance.get(
-  `/tasks?search=${search}&status=${status}&currentPage=${currentPage}&perPage=${perPage}`
+const fetchAllPaginated = async ({ search, status, currentPage, perPage, sortBy, sortOrder }) => axiosInstance.get(
+  `/tasks?search=${search}&status=${status}&currentPage=${currentPage}&perPage=${perPage}&sortBy=${sortBy}&sortOrder=${sortOrder}`
 );
 
 export { fetchAllPaginated };

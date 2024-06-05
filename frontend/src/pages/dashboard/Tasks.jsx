@@ -18,70 +18,21 @@ import {
   Tooltip,
 } from "@material-tailwind/react";
 import { useEffect, useMemo, useState } from "react";
-import { debounce } from "lodash";
+import { debounce, camelCase } from "lodash";
 
 import { AddTaskForm } from "./components/AddTaskForm";
 
 import * as taskService from "@/services/task.service"
 
-const TABLE_ROWS = [
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
-    online: true,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: false,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
-    online: false,
-    date: "19/09/17",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: true,
-    date: "24/12/08",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
-    online: false,
-    date: "04/10/21",
-  },
-];
-
-
 export function Tasks() {
   const [tasks, setTasks] = useState([]);
+  const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [pagination, setPagination] = useState({});
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen((cur) => !cur);
 
   const TABS = [
     { label: "All", value: "" },
@@ -92,9 +43,18 @@ export function Tasks() {
 
   const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
 
+  const handleSort = (sortColumn) => {
+    const newSortBy = camelCase(sortColumn);
+    const newSortDirection = sortBy === newSortBy ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
+    setSortBy(newSortBy);
+    setSortOrder(newSortDirection);
+  };
+
+  const handleOpen = () => setOpen((cur) => !cur);
+
   useEffect(() => {
-    fetchTasks()
-  }, [currentPage, search, status]);
+    fetchTasks();
+  }, [currentPage, search, status, sortBy, sortOrder]);
 
   const fetchTasks = async () => {
     const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
@@ -102,6 +62,8 @@ export function Tasks() {
       perPage: 25,
       search,
       status,
+      sortBy,
+      sortOrder
     });
 
     setTasks(tasks);
@@ -157,6 +119,7 @@ export function Tasks() {
                   <th
                     key={head}
                     className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                    onClick={() => handleSort(head)}
                   >
                     <Typography
                       variant="small"
@@ -175,7 +138,7 @@ export function Tasks() {
             <tbody>
               {tasks.map(
                 (task, index) => {
-                  const isLast = index === TABLE_ROWS.length - 1;
+                  const isLast = index === tasks.length - 1;
                   const classes = isLast
                     ? "p-4"
                     : "p-4 border-b border-blue-gray-50";
