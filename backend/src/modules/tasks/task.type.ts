@@ -17,6 +17,7 @@ type TaskWithUsers = Omit<Task, "createdBy" | "assignedTo"> & { createdBy: User,
 
 type TaskQueryDto = {
   search?: string;
+  status?: string;
   sortBy?: string;
   sortOrder?: string;
   currentPage?: string | number;

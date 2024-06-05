@@ -84,7 +84,7 @@ export function Tasks() {
   const handleOpen = () => setOpen((cur) => !cur);
 
   const TABS = [
-    { label: "All", value: "all" },
+    { label: "All", value: "" },
     { label: "Todo", value: "todo" },
     { label: "WIP", value: "wip" },
     { label: "Complete", value: "complete" },
@@ -94,7 +94,7 @@ export function Tasks() {
 
   useEffect(() => {
     fetchTasks()
-  }, [currentPage, search]);
+  }, [currentPage, search, status]);
 
   const fetchTasks = async () => {
     const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
@@ -107,7 +107,6 @@ export function Tasks() {
     setTasks(tasks);
     setPagination(meta.paginationInfo);
   };
-
 
   const debouncedSearch = useMemo(() => {
     return debounce((e) => setSearch(e.target.value), 500);
@@ -134,7 +133,7 @@ export function Tasks() {
             <Tabs value="all" className="w-full md:w-max">
               <TabsHeader>
                 {TABS.map(({ label, value }) => (
-                  <Tab key={value} value={value}>
+                  <Tab key={value} value={value} onClick={() => setStatus(value)}>
                     &nbsp;&nbsp;{label}&nbsp;&nbsp;
                   </Tab>
                 ))}
