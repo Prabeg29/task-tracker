@@ -75,7 +75,7 @@ export class UserService {
     const user: any = jwt.verify(refreshToken, config.secrets.refreshJwt);
 
     return jwt.sign(
-        { id: user.id, email: user.email, role: roles[user.role] }, 
+        { id: user.id, email: user.email, role: user.role }, 
         config.secrets.jwt, 
         { expiresIn: "10m" }
       );
