@@ -3,7 +3,7 @@ import { roles } from "../../enums/roles.enum";
 import { User, UserResponseDto } from "./user.type";
 
 export class UserMapper {
-  public static toResponseDto (user: User & { accessToken?: string; }): UserResponseDto {
+  public static toResponseDto (user: User & { accessToken?: string; refreshToken?: string; }): UserResponseDto {
 
     if (typeof user.createdAt === "string") {
       user.createdAt = new Date(user.createdAt);
@@ -22,8 +22,9 @@ export class UserMapper {
         createdAt: user.createdAt.toDateString(),
         updatedAt: user.updatedAt.toDateString(),
       },
-      accessToken: user.accessToken ?? undefined,
-      type       : user.accessToken ? "Bearer" : undefined
+      accessToken : user.accessToken ?? undefined,
+      type        : user.accessToken ? "Bearer" : undefined,
+      refreshToken: user.refreshToken ?? undefined,
     };
   }
 
