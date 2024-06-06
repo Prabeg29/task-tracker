@@ -8,6 +8,8 @@ const dbConn = knex(defaultConfig);
 interface PaginateOptions {
   currentPage: number;
   perPage: number;
+  sortBy: string;
+  sortOrder: string;
   selectParams?: Array<string | Knex.Raw<any> >;
   countParam?: string;
 }
@@ -23,13 +25,19 @@ interface PaginationInfo {
 
 const paginate = async <T>(
   queryBuilder: Knex.QueryBuilder,
-  { currentPage, perPage, selectParams = ["*"], countParam = "*" }: PaginateOptions) => {
+  { currentPage, perPage, sortBy, sortOrder="asc", selectParams = ["*"], countParam = "*" }: PaginateOptions) => {
   if (currentPage < 1) {
     currentPage = 1;
   }
 
   const offSet = (currentPage - 1) * perPage;
-  const data = await queryBuilder.clone().select(selectParams).limit(perPage).offset(offSet) as T[];
+  const dataQuery = queryBuilder.clone().select(selectParams);
+
+  if (sortBy) {
+    dataQuery.orderBy(sortBy, sortOrder)
+  }
+  
+  const data = await dataQuery.limit(perPage).offset(offSet) as T[];
   const total = (await queryBuilder.clone().count(`${countParam} as count`).first()).count;
   const lastPage = Math.ceil(total / perPage);
 

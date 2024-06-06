@@ -23,6 +23,8 @@ export class AuthController {
   };
 
   public generateAccessToken = async (req: Request, res: Response): Promise<void> => {
-    res.status(StatusCodes.OK).json({ accessToken: this.userService.generateAccessToken(req.body.refreshToken) });
+    const accessToken = await this.userService.generateAccessToken(req.body.refreshToken);
+
+    res.status(StatusCodes.OK).json({ accessToken: accessToken });
   };
 }

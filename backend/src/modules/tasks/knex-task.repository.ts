@@ -58,13 +58,11 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
       query.orWhere("status", taskQuery.status);
     }
 
-    if (taskQuery.sortBy && taskQuery.sortOrder) {
-      query.orderBy(taskQuery.sortBy, taskQuery.sortOrder);
-    }
-
     return await paginate<TaskWithUsers>(query, {
       currentPage : taskQuery.currentPage as number,
       perPage     : taskQuery.perPage as number,
+      sortBy      : taskQuery.sortBy,
+      sortOrder   : taskQuery.sortOrder,
       selectParams: this.selectParams,
     });
   }

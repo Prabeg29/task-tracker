@@ -12,7 +12,7 @@ const AuthContext = createContext({
 
 export const useAuth = () => useContext(AuthContext);
 
-const REFRESH_INTERVAL = 8 * 60 * 1000; // 8 minutes
+const REFRESH_INTERVAL = 2 * 60 * 1000; // 8 minutes
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useLocalStorage("user", null);

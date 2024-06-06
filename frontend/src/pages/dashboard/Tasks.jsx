@@ -103,7 +103,12 @@ export function Tasks() {
   };
 
   const handleSort = (sortColumn) => {
-    const newSortBy = camelCase(sortColumn);
+    let newSortBy = camelCase(sortColumn);
+
+    if (newSortBy === "assignedTo" || newSortBy === "createdBy") {
+      newSortBy += "User.name";
+    }
+
     const newSortDirection = sortBy === newSortBy ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
     setSortBy(newSortBy);
     setSortOrder(newSortDirection);
