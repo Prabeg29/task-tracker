@@ -76,7 +76,7 @@ export function Tasks() {
         currentPage,
         perPage: 25,
         search,
-        status,
+        status: status === "all" ? "" : status,
         sortBy,
         sortOrder
       });
