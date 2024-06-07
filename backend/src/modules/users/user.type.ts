@@ -21,7 +21,8 @@ type UserResponseDto = {
     updatedAt: string;
   },
   accessToken?: string,
-  type?: string
+  type?: string,
+  refreshToken?: string,
 }
 
-export { User, CreateUserDto, UserResponseDto };
+export { CreateUserDto, User, UserResponseDto };

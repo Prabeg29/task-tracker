@@ -20,6 +20,7 @@ export default {
   },
   secrets: {
     jwt: process.env.JWT_SECRET,
+    refreshJwt: process.env.JWT_REFRESH_SECRET
   },
   permissions: [
     {

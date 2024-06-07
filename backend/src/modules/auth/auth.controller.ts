@@ -11,16 +11,20 @@ export class AuthController {
   ) { }
 
   public register = async (req: Request, res: Response): Promise<void> => {
-    const user: User & { accessToken: string; }  = await this.userService.create(req.body as CreateUserDto);
+    const user: User & { accessToken: string; refreshToken: string; } = await this.userService.create(req.body as CreateUserDto);
 
-    res.status(StatusCodes.CREATED)
-      .json({ message: "Registration successful.", user: UserMapper.toResponseDto(user) });
+    res.status(StatusCodes.CREATED).json({ message: "Registration successful.", user: UserMapper.toResponseDto(user) });
   };
 
   public login = async (req: Request, res: Response): Promise<void> => {
     const user: User & { accessToken: string; } = await this.userService.signin(req.body as Partial<CreateUserDto>);
 
-    res.status(StatusCodes.OK)
-      .json({ message: "Login successful.", user: UserMapper.toResponseDto(user) });
+    res.status(StatusCodes.OK).json({ message: "Login successful.", user: UserMapper.toResponseDto(user) });
+  };
+
+  public generateAccessToken = async (req: Request, res: Response): Promise<void> => {
+    const accessToken = await this.userService.generateAccessToken(req.body.refreshToken);
+
+    res.status(StatusCodes.OK).json({ accessToken: accessToken });
   };
 }

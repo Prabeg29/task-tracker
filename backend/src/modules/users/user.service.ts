@@ -13,7 +13,7 @@ export class UserService {
     protected readonly userRepository: UserRepositoryInterface
   ) {}
 
-  public async create(userData: CreateUserDto): Promise<User & { accessToken: string; }> {
+  public async create(userData: CreateUserDto): Promise<User & { accessToken: string; refreshToken: string; }> {
     const isExistingUser = await this.userRepository.fetchOneByEmail(userData.email);
 
     if (isExistingUser) {
@@ -29,12 +29,17 @@ export class UserService {
       accessToken: jwt.sign(
         { id: user.id, email: user.email, role: roles[user.role] }, 
         config.secrets.jwt, 
-        { expiresIn: "1 day" }
+        { expiresIn: "10m" }
+      ),
+      refreshToken: jwt.sign(
+        { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
+        config.secrets.refreshJwt, 
+        { expiresIn: "7d" }
       )
     };
   }
 
-  public async signin(userData: Partial<CreateUserDto>): Promise<User & { accessToken: string; }> {
+  public async signin(userData: Partial<CreateUserDto>): Promise<User & { accessToken: string; refreshToken: string; }> {
     const isExistingUser = await this.userRepository.fetchOneByEmail(userData.email);
 
     if (!isExistingUser) {
@@ -53,8 +58,27 @@ export class UserService {
         { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
         config.secrets.jwt, 
         { expiresIn: "10m" }
+      ),
+      refreshToken: jwt.sign(
+        { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
+        config.secrets.refreshJwt, 
+        { expiresIn: "7d" }
       )
     };
+  }
+
+  public async generateAccessToken(refreshToken: string): Promise<string> {
+    if (!refreshToken) {
+      throw new HttpException("Invalid credentials", StatusCodes.UNAUTHORIZED);
+    }
+
+    const user: any = jwt.verify(refreshToken, config.secrets.refreshJwt);
+
+    return jwt.sign(
+        { id: user.id, email: user.email, role: user.role }, 
+        config.secrets.jwt, 
+        { expiresIn: "10m" }
+      );
   }
 
   public async fetchAll(): Promise<User[]> {

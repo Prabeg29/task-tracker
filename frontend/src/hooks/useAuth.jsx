@@ -1,12 +1,12 @@
-import { createContext, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useMemo } from "react";
 
 import { useLocalStorage } from "./useLocalStorage";
-  
+
 const AuthContext = createContext({
   user: null,
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -17,12 +17,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = (data) => {
     setUser(data);
-    navigate("/dashboard/tasks", { replace: true });
+    navigate("/dashboard/tasks");
   };
 
   const register = (data) => {
     setUser(data);
-    navigate("/dashboard/tasks", { replace: true });
+    navigate("/dashboard/tasks");
   };
 
   const logout = () => {

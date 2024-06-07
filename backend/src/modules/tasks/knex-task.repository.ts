@@ -50,21 +50,20 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
       .join(`${dbTables.USERS} as createdByUser`, `${dbTables.TASKS}.createdBy`, "createdByUser.id")
       .leftJoin(`${dbTables.USERS} as assignedToUser`, `${dbTables.TASKS}.assignedTo`, "assignedToUser.id");
 
-    // if (taskQuery.search) {
-    //   query.whereLike(`${dbTables.TASKS}.title`, `%${taskQuery.search}%`)
-    // }
+    if (taskQuery.search) {
+      query.where(`${dbTables.TASKS}.title`, "like", `%${taskQuery.search}%`)
+        .orWhere(`${dbTables.TASKS}.description`, "like", `%${taskQuery.search}%`)
+    }
 
     if (taskQuery.status) {
       query.orWhere("status", taskQuery.status);
     }
 
-    if (taskQuery.sortBy && taskQuery.sortOrder) {
-      query.orderBy(taskQuery.sortBy, taskQuery.sortOrder);
-    }
-
     return await paginate<TaskWithUsers>(query, {
       currentPage : taskQuery.currentPage as number,
       perPage     : taskQuery.perPage as number,
+      sortBy      : taskQuery.sortBy,
+      sortOrder   : taskQuery.sortOrder,
       selectParams: this.selectParams,
     });
   }
