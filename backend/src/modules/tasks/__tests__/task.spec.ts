@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { Server } from "http";
 import request from "supertest";
+import { faker } from "@faker-js/faker";
 import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
@@ -51,7 +52,40 @@ describe("Tasks API", () => {
 
     it("should not allow authenticated user to create task, lacking permission to do so", () => { });
 
-    it("should show validation errors when task input is invalid", () => { });
+    const invalidTaskPayloadSet = [
+      // empty
+      {},
+      // text length > 255
+      {
+        "title"      : faker.string.alphanumeric(256),
+        "description": faker.string.alphanumeric(256),
+        "assignedTo" : "",
+      },
+    ];
+
+    it.each(invalidTaskPayloadSet)("should show validation errors when task input is invalid", async (invalidPayload) => {
+      const user = await (new KnexUserRepository()).create({
+        name    : "Hari Bahadur",
+        email   : "hari.bahadur@mahajodi.com",
+        password: bcrypt.hashSync("P@ssword123$", 5),
+        role    : 1
+      });
+
+      response = await request(server)
+        .post("/api/auth/login")
+        .set("Accept", "application/json")
+        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+
+      token = response.body.user.accessToken;
+
+      response = await request(server)
+        .post(`/api/tasks`)
+        .set("Accept", "application/json")
+        .set("Authorization", `Bearer ${token}`)
+        .send(invalidPayload)
+
+      expect(response.status).toEqual(StatusCodes.UNPROCESSABLE_ENTITY);
+    });
 
     it("should create task from authenticated user allowed, having a valid task input", () => { });
   });
@@ -148,7 +182,6 @@ describe("Tasks API", () => {
       expect(response.status).toEqual(StatusCodes.NOT_FOUND);
       expect(response.body.message).toEqual("Task with the given id does not exists");
     });
-
 
     it("should delete task from authenticated user allowed, having a valid task input", () => { });
   });
