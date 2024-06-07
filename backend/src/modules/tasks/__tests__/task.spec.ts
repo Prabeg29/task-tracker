@@ -50,7 +50,7 @@ describe("Tasks API", () => {
       expect(response.body.message).toEqual("No token provided");
     });
 
-    it("should not allow authenticated user to create task, lacking permission to do so", () => { });
+    it.skip("should not allow authenticated user to create task, lacking permission to do so", () => { });
 
     const invalidTaskPayloadSet = [
       // empty
@@ -87,7 +87,36 @@ describe("Tasks API", () => {
       expect(response.status).toEqual(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
-    it("should create task from authenticated user allowed, having a valid task input", () => { });
+    it("should create task from authenticated user allowed, having a valid task input", async () => {
+      const user = await (new KnexUserRepository()).create({
+        name    : "Hari Bahadur",
+        email   : "hari.bahadur@mahajodi.com",
+        password: bcrypt.hashSync("P@ssword123$", 5),
+        role    : 1
+      });
+
+      response = await request(server)
+        .post("/api/auth/login")
+        .set("Accept", "application/json")
+        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+
+      token = response.body.user.accessToken;
+
+      response = await request(server)
+        .post(`/api/tasks`)
+        .set("Accept", "application/json")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          "title"      : "Task Post API testing",
+          "description": faker.string.alphanumeric(100),
+        })
+
+      expect(response.status).toEqual(StatusCodes.CREATED);
+      expect(response.body.message).toEqual("Task created successfully.");
+      expect(response.body.task.attributes.title).toEqual("Task Post API testing");
+      expect(response.body.task.attributes.status).toEqual("todo");
+      expect(response.body.task.relationships.createdBy.attributes.email).toEqual("hari.bahadur@mahajodi.com");
+    });
   });
 
   describe("GET: /api/tasks/:id", () => {
@@ -100,7 +129,7 @@ describe("Tasks API", () => {
       expect(response.body.message).toEqual("No token provided");
     });
 
-    it("should not allow authenticated user to fetch task, lacking permission to do so", () => { });
+    it.skip("should not allow authenticated user to fetch task, lacking permission to do so", () => { });
 
     it("should fetch task when user is authenticated and has permission", () => { });
   });
