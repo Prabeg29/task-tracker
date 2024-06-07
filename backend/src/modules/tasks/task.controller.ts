@@ -27,7 +27,7 @@ export class TaskController {
   };
 
   public create = async (req: Request, res: Response): Promise<void> => {
-    const task: TaskWithUsers = await this.taskService.create(req.body as TaskCreateDto);
+    const task: TaskWithUsers = await this.taskService.create(req.currentUser.id, req.body as TaskCreateDto);
 
     res.status(StatusCodes.CREATED).json({
       message: "Task created successfully.",

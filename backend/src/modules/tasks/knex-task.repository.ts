@@ -76,9 +76,9 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
       .first(this.selectParams);
   }
 
-  public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
+  public async create(authId: number, taskData: TaskCreateDto): Promise<TaskWithUsers> {
     const [taskId] = await dbConn(dbTables.TASKS)
-      .insert({ ...taskData, status: "todo", createdBy: 1 }, ["id"]);
+      .insert({ ...taskData, status: "todo", createdBy: authId }, ["id"]);
 
     return await this.fetchOneById(taskId);
   }

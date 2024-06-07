@@ -27,8 +27,8 @@ export class TaskService {
     return task;
   }
 
-  public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
-    return await this.taskRepository.create(taskData);
+  public async create(authId: number, taskData: TaskCreateDto): Promise<TaskWithUsers> {
+    return await this.taskRepository.create(authId, taskData);
   }
 
   public async update(id: number, taskData: TaskUpdateDto): Promise<TaskWithUsers> {

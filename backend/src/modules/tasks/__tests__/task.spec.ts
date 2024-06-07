@@ -1,13 +1,17 @@
+import bcrypt from "bcrypt";
 import { Server } from "http";
 import request from "supertest";
 import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
 import { refreshDatabase } from "../../../utils/db.util";
+import { KnexTaskRepository } from "../knex-task.repository";
+import { KnexUserRepository } from "../../users/knex-user.repository";
 
 describe("Tasks API", () => {
   let server: Server;
   let response: request.Response;
+  let token: string;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -95,7 +99,31 @@ describe("Tasks API", () => {
       expect(response.body.message).toEqual("No token provided");
     });
 
-    it("should not allow authenticated user to delete task, lacking permission to do so", () => { });
+    it("should not allow authenticated user to delete task, lacking permission to do so", async () => {
+      const user = await (new KnexUserRepository()).create({
+        name    : "Hari Bahadur",
+        email   : "hari.bahadur@mahajodi.com",
+        password: bcrypt.hashSync("P@ssword123$", 5),
+        role    : 3
+      });
+
+      const task = await (new KnexTaskRepository()).create(user.id,  { title: "Write a script" });
+
+      response = await request(server)
+        .post("/api/auth/login")
+        .set("Accept", "application/json")
+        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+
+      token = response.body.user.accessToken;
+
+      response = await request(server)
+        .delete(`/api/tasks/${task.id}`)
+        .set("Accept", "application/json")
+        .set("Authorization", `Bearer ${token}`)
+
+      expect(response.status).toEqual(StatusCodes.FORBIDDEN);
+      expect(response.body.message).toEqual("Unauthorized to access the resource");
+    });
 
     it("should delete task from authenticated user allowed, having a valid task input", () => { });
   });
