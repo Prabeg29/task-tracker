@@ -38,8 +38,8 @@ export class TaskController {
   public fetchOne = async (req: Request, res: Response): Promise<void> => {
     const task: TaskWithUsers = await this.taskService.fetchOneById(parseInt(req.params.id));
 
-    res.status(StatusCodes.CREATED).json({
-      message: "Task created successfully.",
+    res.status(StatusCodes.OK).json({
+      message: "Task fetched successfully.",
       task   : TaskMapper.toResponseDto(task)
     });
   };

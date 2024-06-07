@@ -14,9 +14,10 @@ const taskUpdateSchema = {
   properties: {
     title      : { type: "string", minLength: 1, maxLength: 255, },
     description: { type: "string", maxLength: 255, },
-    assignedTo : { type: "number" },
+    assignedTo : { type: ["number", "null"] },
     status     : { type: "string"}
   },
+  required            : ["title", "status"],
   additionalProperties: false
 };
 
