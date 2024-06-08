@@ -96,7 +96,7 @@ describe("UserService", () => {
 
       res = await userService.signin(createUserDtoStub());
 
-      expect(res).toMatchObject({ ...userStub()[0], token: "dummy-jwt-token" });
+      expect(res).toMatchObject({ ...userStub()[0], accessToken: "dummy-jwt-token", refreshToken: "dummy-jwt-token" });
     });
   });
 });
