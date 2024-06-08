@@ -5,6 +5,8 @@ import { faker } from "@faker-js/faker";
 import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
+import { User } from "../../users/user.type";
+import { roles } from "../../../enums/roles.enum";
 import { refreshDatabase } from "../../../utils/db.util";
 import { KnexTaskRepository } from "../knex-task.repository";
 import { KnexUserRepository } from "../../users/knex-user.repository";
@@ -12,12 +14,26 @@ import { KnexUserRepository } from "../../users/knex-user.repository";
 describe("Tasks API", () => {
   let server: Server;
   let response: request.Response;
+  let user: User;
   let token: string;
 
   beforeEach(async () => {
     jest.clearAllMocks();
     await refreshDatabase();
+    user = await (new KnexUserRepository()).create({
+      name    : "Hari Bahadur",
+      email   : "hari.bahadur@mahajodi.com",
+      password: bcrypt.hashSync("P@ssword123$", 5),
+      role    : roles.SUPER_ADMIN
+    });
     server = (new App()).listen(3000);
+
+    response = await request(server)
+      .post("/api/auth/login")
+      .set("Accept", "application/json")
+      .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+
+    token = response.body.user.accessToken;
   });
 
   afterEach(() => {
@@ -64,20 +80,6 @@ describe("Tasks API", () => {
     ];
 
     it.each(invalidTaskPayloadSet)("should show validation errors when task input is invalid", async (invalidPayload) => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
-
       response = await request(server)
         .post(`/api/tasks`)
         .set("Accept", "application/json")
@@ -88,20 +90,6 @@ describe("Tasks API", () => {
     });
 
     it("should create task from authenticated user allowed, having a valid task input", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
-
       response = await request(server)
         .post(`/api/tasks`)
         .set("Accept", "application/json")
@@ -132,20 +120,6 @@ describe("Tasks API", () => {
     it.skip("should not allow authenticated user to fetch task, lacking permission to do so", () => { });
 
     it("should show error message when trying to fetch non-existing task", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
-
       response = await request(server)
         .get("/api/tasks/1")
         .set("Accept", "application/json")
@@ -156,21 +130,7 @@ describe("Tasks API", () => {
     });
 
     it("should fetch task when user is authenticated and has permission", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
       const task = await (new KnexTaskRepository()).create(user.id, { title: "Write a script" });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
 
       response = await request(server)
         .get(`/api/tasks/${task.id}`)
@@ -212,21 +172,7 @@ describe("Tasks API", () => {
     ];
 
     it.each(invalidPayloadSet)("should show validation errors when task input is invalid", async (invalidPayload) => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
       const task = await (new KnexTaskRepository()).create(user.id, { title: "Write a script" });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
 
       response = await request(server)
         .put(`/api/tasks/${task.id}`)
@@ -238,21 +184,9 @@ describe("Tasks API", () => {
     });
 
     it("should update task from authenticated user allowed, having a valid task input", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
       const task = await (new KnexTaskRepository()).create(user.id, {
         title: "Write a script"
       });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
 
       token = response.body.user.accessToken;
 
@@ -287,11 +221,11 @@ describe("Tasks API", () => {
     });
 
     it("should not allow authenticated user to delete task, lacking permission to do so", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
+      user = await (new KnexUserRepository()).create({
+        name    : "Madan Bahadur",
+        email   : "madan.bahadur@mahajodi.com",
         password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 3
+        role    : roles.MEMBER
       });
 
       const task = await (new KnexTaskRepository()).create(user.id, { title: "Write a script" });
@@ -299,7 +233,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .post("/api/auth/login")
         .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+        .send({ "email": "madan.bahadur@mahajodi.com", "password": "P@ssword123$" });
 
       token = response.body.user.accessToken;
 
@@ -313,20 +247,6 @@ describe("Tasks API", () => {
     });
 
     it("should show error message when trying to delete non-existing task", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
-
       response = await request(server)
         .delete("/api/tasks/1")
         .set("Accept", "application/json")
@@ -337,31 +257,16 @@ describe("Tasks API", () => {
     });
 
     it("should allow super admin to archive delete task", async () => {
-      const user = await (new KnexUserRepository()).create({
-        name    : "Hari Bahadur",
-        email   : "hari.bahadur@mahajodi.com",
-        password: bcrypt.hashSync("P@ssword123$", 5),
-        role    : 1
-      });
-
       const task = await (new KnexTaskRepository()).create(user.id, { title: "Write a script" });
-
-      response = await request(server)
-        .post("/api/auth/login")
-        .set("Accept", "application/json")
-        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
-
-      token = response.body.user.accessToken;
 
       response = await request(server)
         .delete(`/api/tasks/${task.id}`)
         .set("Accept", "application/json")
         .set("Authorization", `Bearer ${token}`)
-
-      console.log(JSON.stringify(response.body, null, 2), response.status);
       
       expect(response.status).toEqual(StatusCodes.OK);
       expect(response.body.message).toEqual("Task deleted successfully");
+      expect(response.body.task.attributes.deleteAt).not.toBeNull();
     });
   });
 });
