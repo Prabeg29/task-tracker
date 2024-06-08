@@ -11,7 +11,7 @@
 
 ## Setup
 ```sh
-$ git clone git@github.com:Prabeg29/prithak-task.git <application-name>
+$ git clone git@github.com:Prabeg29/task-tracker.git <application-name>
 $ cd <application-name>
 $ rm -rf .git
 $ cd ./backend # or ./frontend
