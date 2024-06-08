@@ -52,7 +52,17 @@ describe("Tasks API", () => {
 
     it.skip("should not allow authenticated user to fetch tasks, lacking permission to do so", () => { });
 
-    it.skip("should fetch tasks when user is authenticated and has permission", () => { });
+    it("should fetch tasks with pagination info when user is authenticated and has permission", async () => {
+      response = await request(server)
+        .get("/api/tasks")
+        .set("Accept", "application/json")
+        .set("Authorization", `Bearer ${token}`)
+
+      expect(response.status).toEqual(StatusCodes.OK);
+      expect(response.body.message).toEqual("Tasks fetched successfully");
+      expect(response.body.tasks).toBeTruthy();
+      expect(response.body).toHaveProperty("meta.paginationInfo");
+    });
   });
 
   describe("POST: /api/tasks", () => {
