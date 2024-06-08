@@ -32,7 +32,7 @@ export class UserService {
         { expiresIn: "10m" }
       ),
       refreshToken: jwt.sign(
-        { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
+        { id: user.id, email: user.email, role: roles[user.role] }, 
         config.secrets.refreshJwt, 
         { expiresIn: "7d" }
       )
