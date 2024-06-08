@@ -27,7 +27,7 @@ export class TaskController {
   };
 
   public create = async (req: Request, res: Response): Promise<void> => {
-    const task: TaskWithUsers = await this.taskService.create(req.body as TaskCreateDto);
+    const task: TaskWithUsers = await this.taskService.create(req.currentUser.id, req.body as TaskCreateDto);
 
     res.status(StatusCodes.CREATED).json({
       message: "Task created successfully.",
@@ -38,8 +38,8 @@ export class TaskController {
   public fetchOne = async (req: Request, res: Response): Promise<void> => {
     const task: TaskWithUsers = await this.taskService.fetchOneById(parseInt(req.params.id));
 
-    res.status(StatusCodes.CREATED).json({
-      message: "Task created successfully.",
+    res.status(StatusCodes.OK).json({
+      message: "Task fetched successfully.",
       task   : TaskMapper.toResponseDto(task)
     });
   };
@@ -54,8 +54,11 @@ export class TaskController {
   };
 
   public delete = async (req: Request, res: Response): Promise<void> => {
-    await this.taskService.delete(parseInt(req.params.id));
+    const task: TaskWithUsers = await this.taskService.delete(parseInt(req.params.id));
 
-    res.status(StatusCodes.OK).json({ message: "Task deleted successfully" });
+    res.status(StatusCodes.OK).json({
+      message: "Task deleted successfully",
+      task   : TaskMapper.toResponseDto(task)
+    });
   };
 }

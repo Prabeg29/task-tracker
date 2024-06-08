@@ -76,9 +76,9 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
       .first(this.selectParams);
   }
 
-  public async create(taskData: TaskCreateDto): Promise<TaskWithUsers> {
+  public async create(authId: number, taskData: TaskCreateDto): Promise<TaskWithUsers> {
     const [taskId] = await dbConn(dbTables.TASKS)
-      .insert({ ...taskData, status: "todo", createdBy: 1 }, ["id"]);
+      .insert({ ...taskData, status: "todo", createdBy: authId }, ["id"]);
 
     return await this.fetchOneById(taskId);
   }
@@ -91,7 +91,11 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
     return await this.fetchOneById(id);
   }
 
-  public async delete(id: number): Promise<number> {
-    return await dbConn(dbTables.TASKS).where("id", id).del();
+  public async delete(id: number): Promise<TaskWithUsers> {
+    await dbConn(dbTables.TASKS).where("id", id).update("deletedAt", new Date());
+
+    this.selectParams = [ ...this.selectParams, `${dbTables.TASKS}.deletedAt`,]
+
+    return await this.fetchOneById(id);
   }
 }

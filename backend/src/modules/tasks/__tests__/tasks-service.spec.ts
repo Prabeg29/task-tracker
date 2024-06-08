@@ -14,10 +14,10 @@ describe("Task Service", () => {
   let res;
   let error: HttpException;
 
-  let mockCreate: jest.SpyInstance<Promise<TaskWithUsers>, [taskData: TaskCreateDto]>;
+  let mockCreate: jest.SpyInstance<Promise<TaskWithUsers>, [authId: number, taskData: TaskCreateDto]>;
   let mockFetchOneById: jest.SpyInstance<Promise<TaskWithUsers | undefined>, [id: number]>;
   let mockUpdate: jest.SpyInstance<Promise<TaskWithUsers>, [id: number, taskData: TaskUpdateDto]>;
-  let mockDelete: jest.SpyInstance<Promise<number>, [id: number]>;
+  let mockDelete: jest.SpyInstance<Promise<TaskWithUsers>, [id: number]>;
   let mockFetchAllPaginated: jest.SpyInstance<
     Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }>, [taskQuery: TaskQueryDto]
   >;
@@ -49,7 +49,7 @@ describe("Task Service", () => {
 
       const res = await taskService.fetchAllPaginated(taskQuery);
 
-      expect(mockFetchAllPaginated).toHaveBeenCalledWith(1, 1);
+      expect(mockFetchAllPaginated).toHaveBeenCalledWith({"currentPage": 1, "perPage": 25});
       expect(res).toMatchObject({ data: taskStub(), paginationInfo });
     });
   });
@@ -58,9 +58,9 @@ describe("Task Service", () => {
     it("should create a task", async () => {
       mockCreate.mockResolvedValue(taskStub()[0]);
 
-      res = await taskService.create(createTaskDtoStub());
+      res = await taskService.create(1, createTaskDtoStub());
 
-      expect(mockCreate).toHaveBeenCalledWith(createTaskDtoStub());
+      expect(mockCreate).toHaveBeenCalledWith(1, createTaskDtoStub());
       expect(res).toMatchObject(taskStub()[0]);
     });
   });
@@ -121,7 +121,7 @@ describe("Task Service", () => {
   describe("delete", () => {
     it("should delete the task with the corresponding id", async () => {
       mockFetchOneById.mockResolvedValue(taskStub()[0]);
-      mockDelete.mockResolvedValue(1);
+      mockDelete.mockResolvedValue({ ...taskStub()[0], deletedAt: new Date("2024-12-09 00:00:00") });
     
       await taskService.delete(userStub()[0].id);
 
