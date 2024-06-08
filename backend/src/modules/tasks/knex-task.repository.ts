@@ -91,7 +91,11 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
     return await this.fetchOneById(id);
   }
 
-  public async delete(id: number): Promise<number> {
-    return await dbConn(dbTables.TASKS).where("id", id).del();
+  public async delete(id: number): Promise<TaskWithUsers> {
+    await dbConn(dbTables.TASKS).where("id", id).update("deletedAt", new Date());
+
+    this.selectParams = [ ...this.selectParams, `${dbTables.TASKS}.deletedAt`,]
+
+    return await this.fetchOneById(id);
   }
 }

@@ -336,6 +336,32 @@ describe("Tasks API", () => {
       expect(response.body.message).toEqual("Task with the given id does not exists");
     });
 
-    it.skip("should delete task from authenticated user allowed, having a valid task input", () => { });
+    it("should allow super admin to archive delete task", async () => {
+      const user = await (new KnexUserRepository()).create({
+        name    : "Hari Bahadur",
+        email   : "hari.bahadur@mahajodi.com",
+        password: bcrypt.hashSync("P@ssword123$", 5),
+        role    : 1
+      });
+
+      const task = await (new KnexTaskRepository()).create(user.id, { title: "Write a script" });
+
+      response = await request(server)
+        .post("/api/auth/login")
+        .set("Accept", "application/json")
+        .send({ "email": "hari.bahadur@mahajodi.com", "password": "P@ssword123$" });
+
+      token = response.body.user.accessToken;
+
+      response = await request(server)
+        .delete(`/api/tasks/${task.id}`)
+        .set("Accept", "application/json")
+        .set("Authorization", `Bearer ${token}`)
+
+      console.log(JSON.stringify(response.body, null, 2), response.status);
+      
+      expect(response.status).toEqual(StatusCodes.OK);
+      expect(response.body.message).toEqual("Task deleted successfully");
+    });
   });
 });

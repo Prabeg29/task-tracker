@@ -41,13 +41,9 @@ export class TaskService {
     return await this.taskRepository.update(id, taskData);
   }
 
-  public async delete(id: number): Promise<void> {
+  public async delete(id: number): Promise<TaskWithUsers> {
     const task: TaskWithUsers = await this.fetchOneById(id);
 
-    const result = await this.taskRepository.delete(task.id);
-
-    if (!result) {
-      throw new Error("Error while deleting artist");
-    }
+    return await this.taskRepository.delete(task.id);
   }
 }

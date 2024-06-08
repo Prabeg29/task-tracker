@@ -54,8 +54,11 @@ export class TaskController {
   };
 
   public delete = async (req: Request, res: Response): Promise<void> => {
-    await this.taskService.delete(parseInt(req.params.id));
+    const task: TaskWithUsers = await this.taskService.delete(parseInt(req.params.id));
 
-    res.status(StatusCodes.OK).json({ message: "Task deleted successfully" });
+    res.status(StatusCodes.OK).json({
+      message: "Task deleted successfully",
+      task   : TaskMapper.toResponseDto(task)
+    });
   };
 }

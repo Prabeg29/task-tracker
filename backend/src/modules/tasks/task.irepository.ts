@@ -6,5 +6,5 @@ export interface TaskRepositoryInterface {
   fetchOneById(id: number): Promise<TaskWithUsers | undefined>;
   create(authId: number, taskData: TaskCreateDto): Promise<TaskWithUsers>;
   update(id: number, taskData: TaskUpdateDto): Promise<TaskWithUsers>
-  delete(id: number): Promise<number>;
+  delete(id: number): Promise<TaskWithUsers>;
 }
