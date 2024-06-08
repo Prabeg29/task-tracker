@@ -1,5 +1,5 @@
 <h1 align="center">
-  [Task Tracker](https://app.screencastify.com/v3/watch/Cbe8rQ7hthBm6e9tflY4)
+  Task Tracker
 </h1>
 
 ## Prerequisites
@@ -76,3 +76,5 @@ $ docker-compose down
 ```sh
 $ docker compose exec backend yarn test
 ```
+
+[Recording](https://app.screencastify.com/v3/watch/Cbe8rQ7hthBm6e9tflY4)
