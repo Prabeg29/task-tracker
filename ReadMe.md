@@ -1,6 +1,7 @@
 <h1 align="center">
   Task Tracker
-</h1>
+
+![](task-tracker.gif)
 
 ## Prerequisites
 
