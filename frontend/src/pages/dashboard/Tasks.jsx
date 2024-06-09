@@ -2,19 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   Alert,
-  Card,
-  CardHeader,
-  Input,
-  Typography,
   Button,
+  Card,
   CardBody,
   CardFooter,
+  CardHeader,
+  Chip,
+  IconButton,
+  Input,
   Spinner,
+  Switch,
+  Tab,
   Tabs,
   TabsHeader,
-  Tab,
-  IconButton,
   Tooltip,
+  Typography,
 } from "@material-tailwind/react";
 
 import {
@@ -64,6 +66,12 @@ export function Tasks() {
 
   const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
 
+  const STATUS_CHIP_COLORS = {
+    "todo": "red",
+    "wip": "amber",
+    "complete": "green"
+  };
+
   useEffect(() => {
     fetchTasks();
   }, [currentPage, search, status, sortBy, sortOrder]);
@@ -102,6 +110,10 @@ export function Tasks() {
     }, 3000);
   };
 
+  const debouncedSearch = useMemo(() => {
+    return debounce((e) => setSearch(e.target.value), 500);
+  }, []);
+
   const handleSort = (sortColumn) => {
     let newSortBy = camelCase(sortColumn);
 
@@ -112,6 +124,48 @@ export function Tasks() {
     const newSortDirection = sortBy === newSortBy ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
     setSortBy(newSortBy);
     setSortOrder(newSortDirection);
+  };
+
+  const markTaskAsComplete = async (selectedTask) => {
+    let updatedTask = {
+      id: selectedTask.id,
+      title: selectedTask.attributes.title,
+      description: selectedTask.attributes.description,
+      assignedTo: selectedTask.relationships.assignedTo.id,
+    };
+  
+    if (selectedTask.attributes.status !== "complete") {
+      updatedTask["status"] = "complete"
+    } else {
+      updatedTask["status"] = "todo";
+    }
+
+    setTask(updatedTask);
+
+    try {
+      const { id, ...taskData } = updatedTask;
+      await taskService.update(id, { ...taskData, assignedTo: Number(taskData.assignedTo) });
+      setAlert({
+        "message": "Success: Task saved",
+        "color": "green"
+      })
+      await fetchTasks();
+    } catch ({ response: { data, status } }) {
+      if (status !== 422) {
+        setAlert({
+          "message": `Error: ${data.message}`,
+          "color": "red"
+        })
+      }
+      console.error(data.message);
+    }
+
+    setTimeout(() => {
+      setAlert({
+        "message": "",
+        "color": ""
+      });
+    }, 3000);
   };
 
   const handleOpen = (task = null) => {
@@ -142,10 +196,6 @@ export function Tasks() {
 
     setOpen((cur) => !cur);
   }
-
-  const debouncedSearch = useMemo(() => {
-    return debounce((e) => setSearch(e.target.value), 500);
-  }, []);
 
   const validate = (field, value) => {
     switch (field) {
@@ -367,7 +417,17 @@ export function Tasks() {
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {task.attributes.status}
+                            <Chip 
+                              color={STATUS_CHIP_COLORS[task.attributes.status]}
+                              value={
+                                <Typography
+                                  variant="small"
+                                  color="white"
+                                  className="font-medium capitalize leading-none"
+                                >
+                                  {task.attributes.status}
+                                </Typography>
+                              }/>
                           </Typography>
                         </div>
                       </td>
@@ -392,6 +452,9 @@ export function Tasks() {
                         </div>
                       </td>
                       <td className={classes}>
+                        <Tooltip content="Mark Task as Complete">
+                          <Switch color="green" defaultChecked={task.attributes.status === "complete"} onClick={() => markTaskAsComplete(task)}/>
+                        </Tooltip>
                         <Tooltip content="Edit Task">
                           <IconButton variant="text" onClick={() => handleOpen(task)}>
                             <PencilIcon className="h-4 w-4" />
