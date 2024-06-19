@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
 
 import { UserMapper } from "../users/user.mapper";
 import { UserService } from "../users/user.service";
 import { CreateUserDto, User } from "../users/user.type";
+import { StatusCodes } from "../../enums/status-codes.enum";
 
 export class AuthController {
   constructor(

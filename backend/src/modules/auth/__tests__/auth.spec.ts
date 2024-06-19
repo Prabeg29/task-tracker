@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import { Server } from "http";
 import request from "supertest";
-import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
 import { refreshDatabase } from "../../../utils/db.util";
+import { StatusCodes } from "../../../enums/status-codes.enum";
 import { KnexUserRepository } from "../../users/knex-user.repository";
 
 let server: Server;

@@ -2,7 +2,7 @@ import { TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "./tas
 import { PaginationInfo } from "../../utils/db.util";
 import { TaskRepositoryInterface } from "./task.irepository";
 import { HttpException } from "../../exceptions/http.exception";
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from "../../enums/status-codes.enum";
 
 export class TaskService {
   constructor(
