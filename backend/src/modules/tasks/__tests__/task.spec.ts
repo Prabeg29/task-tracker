@@ -2,13 +2,13 @@ import bcrypt from "bcrypt";
 import { Server } from "http";
 import request from "supertest";
 import { faker } from "@faker-js/faker";
-import { StatusCodes } from "http-status-codes";
 
 import { App } from "../../../app";
 import { User } from "../../users/user.type";
 import { roles } from "../../../enums/roles.enum";
 import { refreshDatabase } from "../../../utils/db.util";
 import { KnexTaskRepository } from "../knex-task.repository";
+import { StatusCodes } from "../../../enums/status-codes.enum";
 import { KnexUserRepository } from "../../users/knex-user.repository";
 
 describe("Tasks API", () => {
@@ -56,7 +56,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .get("/api/tasks")
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(StatusCodes.OK);
       expect(response.body.message).toEqual("Tasks fetched successfully");
@@ -91,23 +91,23 @@ describe("Tasks API", () => {
 
     it.each(invalidTaskPayloadSet)("should show validation errors when task input is invalid", async (invalidPayload) => {
       response = await request(server)
-        .post(`/api/tasks`)
+        .post("/api/tasks")
         .set("Accept", "application/json")
         .set("Authorization", `Bearer ${token}`)
-        .send(invalidPayload)
+        .send(invalidPayload);
 
       expect(response.status).toEqual(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
     it("should create task from authenticated user allowed, having a valid task input", async () => {
       response = await request(server)
-        .post(`/api/tasks`)
+        .post("/api/tasks")
         .set("Accept", "application/json")
         .set("Authorization", `Bearer ${token}`)
         .send({
           "title"      : "Task Post API testing",
           "description": faker.string.alphanumeric(100),
-        })
+        });
 
       expect(response.status).toEqual(StatusCodes.CREATED);
       expect(response.body.message).toEqual("Task created successfully.");
@@ -133,7 +133,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .get("/api/tasks/1")
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(StatusCodes.NOT_FOUND);
       expect(response.body.message).toEqual("Task with the given id does not exists");
@@ -145,7 +145,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .get(`/api/tasks/${task.id}`)
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(StatusCodes.OK);
       expect(response.body.message).toEqual("Task fetched successfully.");
@@ -209,7 +209,7 @@ describe("Tasks API", () => {
           "description": faker.string.alphanumeric(100),
           "assignedTo" : 1,
           "status"     : "wip",
-        })
+        });
 
       expect(response.status).toEqual(StatusCodes.OK);
       expect(response.body.message).toEqual("Task updated successfully");
@@ -250,7 +250,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .delete(`/api/tasks/${task.id}`)
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(StatusCodes.FORBIDDEN);
       expect(response.body.message).toEqual("Unauthorized to access the resource");
@@ -260,7 +260,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .delete("/api/tasks/1")
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toEqual(StatusCodes.NOT_FOUND);
       expect(response.body.message).toEqual("Task with the given id does not exists");
@@ -272,7 +272,7 @@ describe("Tasks API", () => {
       response = await request(server)
         .delete(`/api/tasks/${task.id}`)
         .set("Accept", "application/json")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Authorization", `Bearer ${token}`);
       
       expect(response.status).toEqual(StatusCodes.OK);
       expect(response.body.message).toEqual("Task deleted successfully");

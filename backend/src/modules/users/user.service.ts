@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { StatusCodes } from "http-status-codes";
 
 import config from "../../config";
 import { roles } from "../../enums/roles.enum";
 import { CreateUserDto, User } from "./user.type";
+import { StatusCodes } from "../../enums/status-codes.enum";
 import { UserRepositoryInterface } from "./user.irepository";
 import { HttpException } from "../../exceptions/http.exception";
 
@@ -72,13 +72,13 @@ export class UserService {
       throw new HttpException("Invalid credentials", StatusCodes.UNAUTHORIZED);
     }
 
-    const user: any = jwt.verify(refreshToken, config.secrets.refreshJwt);
+    const user = jwt.verify(refreshToken, config.secrets.refreshJwt) as { id: number; email: string; role: string };
 
     return jwt.sign(
-        { id: user.id, email: user.email, role: user.role }, 
-        config.secrets.jwt, 
-        { expiresIn: "10m" }
-      );
+      { id: user.id, email: user.email, role: user.role }, 
+      config.secrets.jwt, 
+      { expiresIn: "10m" }
+    );
   }
 
   public async fetchAll(): Promise<User[]> {

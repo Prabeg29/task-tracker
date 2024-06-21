@@ -52,7 +52,7 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
 
     if (taskQuery.search) {
       query.where(`${dbTables.TASKS}.title`, "like", `%${taskQuery.search}%`)
-        .orWhere(`${dbTables.TASKS}.description`, "like", `%${taskQuery.search}%`)
+        .orWhere(`${dbTables.TASKS}.description`, "like", `%${taskQuery.search}%`);
     }
 
     if (taskQuery.status) {
@@ -94,7 +94,7 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
   public async delete(id: number): Promise<TaskWithUsers> {
     await dbConn(dbTables.TASKS).where("id", id).update("deletedAt", new Date());
 
-    this.selectParams = [ ...this.selectParams, `${dbTables.TASKS}.deletedAt`,]
+    this.selectParams = [ ...this.selectParams, `${dbTables.TASKS}.deletedAt`,];
 
     return await this.fetchOneById(id);
   }

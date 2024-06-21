@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
 import { ParamsDictionary } from "express-serve-static-core";
 
 import { TaskService } from "./task.service";
 import { TaskMapper } from "./task.mapper";
+import { StatusCodes } from "../../enums/status-codes.enum";
 import { TaskCreateDto, TaskQueryDto, TaskUpdateDto, TaskWithUsers } from "./task.type";
 
 export class TaskController {

@@ -1,8 +1,8 @@
-import { StatusCodes } from "http-status-codes";
 import { JsonWebTokenError } from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 
 import logger from "../utils/logger.util";
+import { StatusCodes } from "../enums/status-codes.enum";
 import { HttpException } from "../exceptions/http.exception";
 import { ValidationException } from "../exceptions/validation.exception";
 

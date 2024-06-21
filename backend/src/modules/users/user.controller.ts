@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
 
 import { UserMapper } from "./user.mapper";
 import { UserService } from "./user.service";
+import { StatusCodes } from "../../enums/status-codes.enum";
 
 export class UserController {
   constructor(

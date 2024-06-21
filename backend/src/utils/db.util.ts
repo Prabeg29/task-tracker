@@ -34,7 +34,7 @@ const paginate = async <T>(
   const dataQuery = queryBuilder.clone().select(selectParams);
 
   if (sortBy) {
-    dataQuery.orderBy(sortBy, sortOrder)
+    dataQuery.orderBy(sortBy, sortOrder);
   }
   
   const data = await dataQuery.limit(perPage).offset(offSet) as T[];

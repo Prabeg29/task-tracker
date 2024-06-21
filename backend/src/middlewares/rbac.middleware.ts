@@ -1,7 +1,7 @@
-import { StatusCodes } from "http-status-codes";
 import { NextFunction, Request, Response } from "express";
 
 import config from "../config";
+import { StatusCodes } from "../enums/status-codes.enum";
 import { HttpException } from "../exceptions/http.exception";
 
 export const checkPermission = (permission: string) => {
