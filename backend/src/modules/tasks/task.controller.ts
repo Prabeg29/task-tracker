@@ -15,7 +15,10 @@ export class TaskController {
     req: Request<ParamsDictionary, unknown, unknown, { search: string; sortBy: string; sortOrder: string; currentPage: string; perPage: string;}>,
     res: Response
   ): Promise<void> => {
-    const { data: tasks, paginationInfo } = await this.taskService.fetchAllPaginated(req.query as TaskQueryDto);
+    const { data: tasks, paginationInfo } = await this.taskService.fetchAllPaginated(
+      req.query as TaskQueryDto,
+      req.currentUser.role
+    );
 
     res.status(StatusCodes.OK).json({
       message: "Tasks fetched successfully",

@@ -12,12 +12,7 @@ import { taskCreateSchema, taskUpdateSchema } from "../modules/tasks/task.schema
 const router: Router = Router();
 const taskController = new TaskController(new TaskService(new KnexTaskRepository()));
 
-router.get(
-  "/",
-  authenticate,
-  checkPermission("read_tasks"),
-  tryCatchWrapper(taskController.fetchAll)
-);
+router.get("/", authenticate, checkPermission("read_tasks"), tryCatchWrapper(taskController.fetchAll));
 router.post(
   "/",
   authenticate,
@@ -25,12 +20,7 @@ router.post(
   validate(taskCreateSchema),
   tryCatchWrapper(taskController.create)
 );
-router.get(
-  "/:id",
-  authenticate,
-  checkPermission("read_tasks"),
-  tryCatchWrapper(taskController.fetchOne)
-);
+router.get("/:id", authenticate, checkPermission("read_tasks"), tryCatchWrapper(taskController.fetchOne));
 router.put(
   "/:id",
   authenticate,
@@ -38,11 +28,6 @@ router.put(
   validate(taskUpdateSchema),
   tryCatchWrapper(taskController.update)
 );
-router.delete(
-  "/:id",
-  authenticate,
-  checkPermission("delete_tasks"),
-  tryCatchWrapper(taskController.delete)
-);
+router.delete("/:id", authenticate, checkPermission("delete_tasks"), tryCatchWrapper(taskController.delete));
 
 export default router;

@@ -12,6 +12,6 @@ const authController = new AuthController(new UserService(new KnexUserRepository
 
 router.post("/register", validate(registrationSchema), tryCatchWrapper(authController.register));
 router.post("/login", validate(loginSchema), tryCatchWrapper(authController.login));
-router.post("/generate-access-token", tryCatchWrapper(authController.generateAccessToken))
+router.post("/generate-access-token", tryCatchWrapper(authController.generateAccessToken));
 
 export default router;

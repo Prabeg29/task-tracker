@@ -45,14 +45,23 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
     )
   ];
 
-  public async fetchAllPaginated(taskQuery: TaskQueryDto): Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }> {
+  public async fetchAllPaginated(
+    taskQuery: TaskQueryDto,
+    role: string
+  ): Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }> {
     const query = dbConn<Task>(dbTables.TASKS)
       .join(`${dbTables.USERS} as createdByUser`, `${dbTables.TASKS}.createdBy`, "createdByUser.id")
       .leftJoin(`${dbTables.USERS} as assignedToUser`, `${dbTables.TASKS}.assignedTo`, "assignedToUser.id");
 
+    if (role !== "SUPER_ADMIN") {
+      query.whereNull(`${dbTables.TASKS}.deletedAt`);
+    }
+
     if (taskQuery.search) {
-      query.where(`${dbTables.TASKS}.title`, "like", `%${taskQuery.search}%`)
-        .orWhere(`${dbTables.TASKS}.description`, "like", `%${taskQuery.search}%`);
+      query.where(q => {
+        return q.where(`${dbTables.TASKS}.title`, "like", `%${taskQuery.search}%`)
+          .orWhere(`${dbTables.TASKS}.description`, "like", `%${taskQuery.search}%`);
+      });
     }
 
     if (taskQuery.status) {

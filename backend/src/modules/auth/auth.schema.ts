@@ -4,7 +4,7 @@ const registrationSchema = {
   type      : "object",
   properties: {
     name    : { type: "string", minLength: 1, maxLength: 255, },
-    email   : { type: "string", format: "email", maxLength: 255, },
+    email   : { type: "string", minLength: 1, format: "email", maxLength: 255, },
     password: {
       type     : "string",
       minLength: 8,

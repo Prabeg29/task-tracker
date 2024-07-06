@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Alert,
@@ -72,17 +72,13 @@ export function Tasks() {
     "complete": "green"
   };
 
-  useEffect(() => {
-    fetchTasks();
-  }, [currentPage, search, status, sortBy, sortOrder]);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setIsLoading(true);
 
     try {
       const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
         currentPage,
-        perPage: 25,
+        perPage: 5,
         search,
         status: status === "all" ? "" : status,
         sortBy,
@@ -98,7 +94,6 @@ export function Tasks() {
           "color": "red"
         })
       }
-      console.error(data.message);
     }
 
     setIsLoading(false);
@@ -108,7 +103,11 @@ export function Tasks() {
         "color": ""
       });
     }, 3000);
-  };
+  }, [currentPage, search, status, sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const debouncedSearch = useMemo(() => {
     return debounce((e) => setSearch(e.target.value), 500);
@@ -157,7 +156,6 @@ export function Tasks() {
           "color": "red"
         })
       }
-      console.error(data.message);
     }
 
     setTimeout(() => {
@@ -244,7 +242,6 @@ export function Tasks() {
           "color": "red"
         })
       }
-      console.err(data.message);
     }
     setTimeout(() => {
       setAlert({
@@ -269,7 +266,6 @@ export function Tasks() {
           "color": "red"
         })
       }
-      console.error(data.message);
     }
     setTimeout(() => {
       setAlert({
@@ -423,7 +419,7 @@ export function Tasks() {
                                 <Typography
                                   variant="small"
                                   color="white"
-                                  className="font-medium capitalize leading-none"
+                                  className="font-medium capitalize leading-none text-center"
                                 >
                                   {task.attributes.status}
                                 </Typography>

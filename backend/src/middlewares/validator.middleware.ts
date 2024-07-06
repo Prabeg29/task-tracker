@@ -20,7 +20,7 @@ export const validate = (schema: any) => {
   };
 };
 
-const formatValidationErrors = (errors: ErrorObject[]): Array<{ field: string; errors: string[] }> => {
+const formatValidationErrors = (errors: ErrorObject[]): { [k: string]: string[] } => {
   const errorMap: Map<string, string[]> = new Map();
 
   errors.forEach(({ instancePath, keyword, message, params }) => {
@@ -48,5 +48,5 @@ const formatValidationErrors = (errors: ErrorObject[]): Array<{ field: string; e
     errorMap.get(field)!.push(errorMsg);
   });
 
-  return Array.from(errorMap, ([field, errors]) => ({ field, errors }));
+  return Object.fromEntries(errorMap.entries());
 };
