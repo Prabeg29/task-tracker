@@ -9,12 +9,18 @@ export class TaskService {
     protected readonly taskRepository: TaskRepositoryInterface
   ) {}
 
-  public async fetchAllPaginated(taskQuery: TaskQueryDto): Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }> {
-    return await this.taskRepository.fetchAllPaginated({
-      ...taskQuery,
-      currentPage: Number(taskQuery.currentPage)|| 1,
-      perPage    : Number(taskQuery.perPage)|| 25,
-    } as TaskQueryDto);
+  public async fetchAllPaginated(
+    taskQuery: TaskQueryDto,
+    role: string
+  ): Promise<{ data: TaskWithUsers[]; paginationInfo: PaginationInfo; }> {
+    return await this.taskRepository.fetchAllPaginated(
+      {
+        ...taskQuery,
+        currentPage: Number(taskQuery.currentPage)|| 1,
+        perPage    : Number(taskQuery.perPage)|| 10,
+      } as TaskQueryDto,
+      role
+    );
   }
 
   public async fetchOneById(id: number): Promise<TaskWithUsers> {

@@ -19,7 +19,7 @@ export default {
     password: process.env.DB_PASSWORD || ""
   },
   secrets: {
-    jwt: process.env.JWT_SECRET,
+    jwt       : process.env.JWT_SECRET,
     refreshJwt: process.env.JWT_REFRESH_SECRET
   },
   permissions: [

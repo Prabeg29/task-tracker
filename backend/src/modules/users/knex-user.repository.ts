@@ -19,6 +19,6 @@ export class KnexUserRepository implements UserRepositoryInterface {
   }
 
   public async fetchAll(): Promise<User[]> {
-    return await dbConn<User>(dbTables.USERS)
+    return await dbConn<User>(dbTables.USERS);
   }
 }

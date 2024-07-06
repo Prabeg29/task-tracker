@@ -57,9 +57,14 @@ export function Login() {
       const { data: { user } } = await authService.login(inputs);
 
       login(user);
-    } catch ({ response: { data, status } }) {
+    } catch ({ response: { data: { message }, status } }) {
       if (status !== 422) {
-        setAlert(data.message);
+        setAlert(message);
+      } else if (status === 422) {
+        setErrors({
+          "email": message?.email?.[0] ?? "",
+          "password": message?.password?.[0] ?? "",
+        });
       }
     }
   };
