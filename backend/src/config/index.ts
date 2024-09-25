@@ -18,10 +18,6 @@ export default {
     user    : process.env.DB_USERNAME || "task-tracker",
     password: process.env.DB_PASSWORD || ""
   },
-  secrets: {
-    jwt       : process.env.JWT_SECRET,
-    refreshJwt: process.env.JWT_REFRESH_SECRET
-  },
   permissions: [
     {
       "role"       : "super_admin",
@@ -36,4 +32,14 @@ export default {
       "permissions": ["create_tasks", "read_tasks", "update_tasks"]
     }
   ],
+  secrets: {
+    jwt       : process.env.JWT_SECRET,
+    refreshJwt: process.env.JWT_REFRESH_SECRET
+  },
+  google: {
+    oauthClientId    : process.env.GOOGLE_OAUTH_CLIENT_ID,
+    oauthClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    scopes           : process.env.GOOGLE_OAUTH_SCOPES,
+    redirectUrl      : process.env.GOOGLE_OAUTH_CALLBACK_URL
+  },
 };
