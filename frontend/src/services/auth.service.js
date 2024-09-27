@@ -8,8 +8,7 @@ const axiosInstance = axios.create({
   }
 });
 
-const register = async (payload) => axiosInstance.post("/auth/register", payload);
-
-const login = async (payload) => axiosInstance.post("/auth/login", payload);
-
-export { login, register };
+export default {
+  initiateGoogleConsent: () => axiosInstance.post("/auth/google/consent"),
+  googleLogin: (payload) => axiosInstance.post("/auth/google/callback", payload) 
+};
