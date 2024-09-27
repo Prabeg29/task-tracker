@@ -19,8 +19,16 @@ export class AuthController {
 
   public googleCallback = async (req: Request, res: Response): Promise<void> => {
     const user: User & { accessToken: string; refreshToken: string; } = await this.authService.login(req.query.code as string);
-
-    res.status(StatusCodes.OK).json({ user: UserMapper.toResponseDto(user) });
+    
+    res.status(StatusCodes.OK)
+      .cookie("accessToken", user.accessToken, {
+        maxAge  : 84600000,
+        secure  : true,
+        httpOnly: true,
+        sameSite: "lax",
+        path    : "/"
+      })
+      .json({ user: UserMapper.toResponseDto(user) });
   };
 
   public generateAccessToken = async (req: Request, res: Response): Promise<void> => {
