@@ -9,7 +9,7 @@ const router: Router = Router();
 const authController = new AuthController(new AuthService(new KnexUserRepository()));
 
 router.post("/google/consent", tryCatchWrapper(authController.googleConsent));
-router.get("/google/callback", tryCatchWrapper(authController.googleCallback));
+router.post("/google/callback", tryCatchWrapper(authController.googleCallback));
 router.post("/generate-access-token", tryCatchWrapper(authController.generateAccessToken));
 
 export default router;

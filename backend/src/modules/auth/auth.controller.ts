@@ -11,14 +11,14 @@ export class AuthController {
   ) { }
 
   public googleConsent =  (_req: Request, res: Response): void => {
-    res.status(StatusCodes.OK).json({ 
+    res.status(StatusCodes.OK).json({
       message: "Please visit the following link",
       link   : this.authService.getConsentUrl()
     });
   };
 
   public googleCallback = async (req: Request, res: Response): Promise<void> => {
-    const user: User & { accessToken: string; refreshToken: string; } = await this.authService.login(req.query.code as string);
+    const user: User & { accessToken: string; refreshToken: string; } = await this.authService.login(req.body.code as string);
     
     res.status(StatusCodes.OK)
       .cookie("accessToken", user.accessToken, {

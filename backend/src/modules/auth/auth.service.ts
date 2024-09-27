@@ -30,7 +30,7 @@ export class AuthService {
     const accessToken = token.access_token;
 
     if (!accessToken) {
-      throw new HttpException("Failed to get access token", StatusCodes.UNPROCESSABLE_ENTITY);
+      throw new HttpException("Failed to get access token", StatusCodes.SERVICE_UNAVAILABLE);
     }
 
     const userInfo = await this.googleService.getUserInfo(accessToken);
