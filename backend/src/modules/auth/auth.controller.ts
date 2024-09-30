@@ -38,11 +38,8 @@ export class AuthController {
       .json({ user: UserMapper.toResponseDto(user) });
   };
 
-  public generateAccessToken = async (req: Request, res: Response) => {
-    console.log(req.cookies);
+  public generateAccessToken = async (req: Request, res: Response): Promise<void> => {
     const accessToken = await this.authService.generateAccessToken(req.cookies.refreshToken);
-
-    console.log("accessToken", accessToken);
 
     res.status(StatusCodes.OK)
       .cookie("accessToken", accessToken, {
