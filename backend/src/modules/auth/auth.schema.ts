@@ -16,7 +16,6 @@ const registrationSchema = {
   additionalProperties: false
 };
 
-
 const loginSchema = {
   type      : "object",
   properties: {
@@ -27,4 +26,14 @@ const loginSchema = {
   additionalProperties: false
 };
 
-export { registrationSchema, loginSchema };
+const googleLoginSchema = {
+  type      : "object",
+  properties: {
+    state: { type: "string" },
+    code : { type: "string" },
+  },
+  required            : ["state", "code"],
+  additionalProperties: false
+};
+
+export { registrationSchema, loginSchema, googleLoginSchema };

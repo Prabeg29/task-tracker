@@ -1,22 +1,30 @@
-import { useState } from "react";
-import {
-  Alert,
-  Input,
-  Button,
-  Typography,
-} from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
+import { Alert, Button, Input, Typography } from "@material-tailwind/react";
 
 import { useAuth } from "@/hooks/useAuth";
-import * as authService from "@/services/auth.service";
+import authService from "@/services/auth.service";
 
 export function Login() {
+  const { login } = useAuth();
   const [inputs, setInputs] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [passwordShown, setPasswordShown] = useState(false);
+  const [searchParams] = useSearchParams("")
   const [alert, setAlert] = useState("");
-  const { login } = useAuth();
+
+  useEffect(() => {
+    if (
+      searchParams.size &&
+      searchParams.get("code")
+    ) {
+      handleGoogleLogin({
+        state: searchParams.get("state"),
+        code: searchParams.get("code")
+      });
+    }
+  }, [searchParams])
 
   const handleChange = (event) => {
     setAlert("");
@@ -30,9 +38,9 @@ export function Login() {
       case "email":
         return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "Invalid email format" : "";
       case "password":
-        return value.length < 8 || 
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$/.test(value) ? 
-          "Password must be at least 8 characters long with at least 1 uppercase, 1 number and 1 special character" : 
+        return value.length < 8 ||
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$/.test(value) ?
+          "Password must be at least 8 characters long with at least 1 uppercase, 1 number and 1 special character" :
           "";
       default:
         return "";
@@ -69,6 +77,27 @@ export function Login() {
     }
   };
 
+  const initiateGoogleConsent = async () => {
+    try {
+      const { data: { link } } = await authService.initiateGoogleConsent();
+
+      window.location.href = new URL(link);
+    } catch ({ response: { data: { message }, status } }) {
+      if (status !== 422) {
+        setAlert(message);
+      }
+    }
+  }
+
+  const handleGoogleLogin = async (payload) => {
+    try {
+      const { data: { user } } = await authService.googleLogin(payload);
+      login(user);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <section className="m-8 flex gap-4">
       <div className="w-full lg:w-3/5 mt-24">
@@ -77,7 +106,7 @@ export function Login() {
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to login.</Typography>
         </div>
         <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
-        {alert.length !== 0 && (<Alert
+          {alert.length !== 0 && (<Alert
             className="mb-5 flex flex-col gap-6"
             color="red"
           >
@@ -134,22 +163,28 @@ export function Login() {
                 {errors.password}
               </Typography>
             )}
-          </div>
-          <Button className="mt-6" fullWidth type="submit">
-            Login
-          </Button>
-
-          <div className="flex items-center justify-between gap-2 mt-6">
-            <Typography variant="small" className="font-medium text-gray-900">
-              <a href="#">
-                Forgot Password
-              </a>
+            <Button className="mt-4" fullWidth type="submit">
+              Login
+            </Button>
+            <Button
+              variant="outlined"
+              size="lg"
+              className="flex h-12 items-center justify-center gap-2"
+              fullWidth
+              onClick={initiateGoogleConsent}
+            >
+              <img
+                src={`https://www.material-tailwind.com/logos/logo-google.png`}
+                alt="google"
+                className="h-6 w-6"
+              />{" "}
+              sign in with google
+            </Button>
+            <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
+              Not registered?
+              <Link to="/auth/register" className="text-gray-900 ml-1">Create account</Link>
             </Typography>
           </div>
-          <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
-            Not registered?
-            <Link to="/auth/register" className="text-gray-900 ml-1">Create account</Link>
-          </Typography>
         </form>
       </div>
       <div className="w-2/5 h-full hidden lg:block">

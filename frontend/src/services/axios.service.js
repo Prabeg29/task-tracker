@@ -5,23 +5,9 @@ const axiosInstance = axios.create({
   headers: {
     "Accept": "application/json",
     "Content-Type": "application/json",
-  }
-});
-
-axiosInstance.interceptors.request.use(
-  function (config) {
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (user) {
-      config.headers.Authorization = `Bearer ${user.accessToken}`;
-    }
-
-    return config;
   },
-  function (error) {
-    Promise.reject(error);
-  }
-);
+  withCredentials: true,
+});
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -31,18 +17,12 @@ axiosInstance.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const user = JSON.parse(localStorage.getItem("user"))
-      const refreshToken = user.refreshToken;
-
       try {
-        const response = await axios.post("http://localhost:8848/api/auth/generate-access-token", { refreshToken });
+        const response = await axiosInstance.post("auth/generate-access-token", { }, { withCredentials: true });
 
-        const accessToken = response.data.accessToken;
-        localStorage.setItem("user", JSON.stringify({ ...user, accessToken: accessToken}));
+        console.log(response)
 
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-        return axios(originalRequest); 
+        return axiosInstance(originalRequest); 
       } catch (error) {
         localStorage.setItem("user", null);
         window.location.href = "/auth/login"

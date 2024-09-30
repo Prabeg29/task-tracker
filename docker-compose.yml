@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   task-tracker:
     driver: bridge
@@ -10,7 +8,6 @@ services:
     container_name: task-tracker_db
     cap_add:
       - SYS_NICE
-    command: --mysql-native-password=ON
     restart: always
     environment:
       MYSQL_DATABASE: task_tracker
