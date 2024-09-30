@@ -27,8 +27,10 @@ export function Login() {
       const { data: { link } } = await authService.initiateGoogleConsent();
 
       window.location.href = new URL(link);
-    } catch (err) {
-      console.log(link);
+    } catch ({ response: { data: { message }, status } }) {
+      if (status !== 422) {
+        setAlert(message);
+      }
     }
   }
 
@@ -36,10 +38,8 @@ export function Login() {
     try {
       const { data: { user } } = await authService.googleLogin(payload);
       login(user);
-    } catch ({ response: { data: { message }, status } }) {
-      if (status !== 422) {
-        setAlert(message);
-      }
+    } catch (err) {
+      console.log(err);
     }
   }
 

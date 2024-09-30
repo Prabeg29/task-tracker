@@ -1,12 +1,4 @@
-import axios from "axios";
-
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:8848/api",
-  headers: {
-    "Accept": "application/json",
-    "Content-Type": "application/json"
-  }
-});
+import axiosInstance from "./axios.service";
 
 export default {
   initiateGoogleConsent: () => axiosInstance.post("/auth/google/consent"),
