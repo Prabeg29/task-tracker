@@ -3,6 +3,7 @@ import express from "express";
 import { Server } from "http";
 import bodyParser from "body-parser";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 
 import config from "./config";
 import routes from "./routes";
@@ -26,8 +27,12 @@ export class App {
   }
 
   private loadMiddlewares(): void {
-    this.app.use(cors());
+    this.app.use(cors({
+      origin     : "http://localhost:5173",
+      credentials: true,
+    }));
     this.app.use(compression());
+    this.app.use(cookieParser());
     this.app.use(bodyParser.json());
   }
 
