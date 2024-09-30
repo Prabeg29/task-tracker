@@ -22,10 +22,6 @@ export class AuthService {
   }
 
   public async login(code: string | null): Promise<User & { accessToken: string; refreshToken: string; }> {
-    if (!code) {
-      throw new HttpException("Authorization code not found", StatusCodes.NOT_FOUND);
-    }
-
     const token = await this.googleService.getToken(code, config.google.redirectUrl);
     const accessToken = token.access_token;
 
@@ -46,7 +42,7 @@ export class AuthService {
       accessToken: jwt.sign(
         { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
         config.secrets.jwt, 
-        { expiresIn: "10m" }
+        { expiresIn: 10 }
       ),
       refreshToken: jwt.sign(
         { id: isExistingUser.id, email: isExistingUser.email, role: roles[isExistingUser.role] }, 
@@ -66,7 +62,7 @@ export class AuthService {
     return jwt.sign(
       { id: user.id, email: user.email, role: user.role }, 
       config.secrets.jwt, 
-      { expiresIn: "10m" }
+      { expiresIn: "1h" }
     );
   }
 }

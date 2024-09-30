@@ -10,7 +10,7 @@ export class AuthController {
     protected readonly authService: AuthService,
   ) { }
 
-  public googleConsent =  (_req: Request, res: Response): void => {
+  public googleConsent = (_req: Request, res: Response): void => {
     res.status(StatusCodes.OK).json({
       message: "Please visit the following link",
       link   : this.authService.getConsentUrl()
@@ -19,11 +19,18 @@ export class AuthController {
 
   public googleCallback = async (req: Request, res: Response): Promise<void> => {
     const user: User & { accessToken: string; refreshToken: string; } = await this.authService.login(req.body.code as string);
-    
+
     res.status(StatusCodes.OK)
       .cookie("accessToken", user.accessToken, {
-        maxAge  : 84600000,
-        secure  : true,
+        maxAge  : 3600000,
+        secure  : false,
+        httpOnly: true,
+        sameSite: "lax",
+        path    : "/",
+      })
+      .cookie("refreshToken", user.refreshToken, {
+        maxAge  : 604800000,
+        secure  : false,
         httpOnly: true,
         sameSite: "lax",
         path    : "/"
@@ -31,9 +38,20 @@ export class AuthController {
       .json({ user: UserMapper.toResponseDto(user) });
   };
 
-  public generateAccessToken = async (req: Request, res: Response): Promise<void> => {
-    const accessToken = await this.authService.generateAccessToken(req.body.refreshToken);
+  public generateAccessToken = async (req: Request, res: Response) => {
+    console.log(req.cookies);
+    const accessToken = await this.authService.generateAccessToken(req.cookies.refreshToken);
 
-    res.status(StatusCodes.OK).json({ accessToken: accessToken });
+    console.log("accessToken", accessToken);
+
+    res.status(StatusCodes.OK)
+      .cookie("accessToken", accessToken, {
+        maxAge  : 3600000,
+        secure  : false,
+        httpOnly: true,
+        sameSite: "lax",
+        path    : "/",
+      })
+      .json({ message: "Access token generated successfully" });;
   };
 }
