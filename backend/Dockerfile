@@ -1,20 +1,33 @@
-# Base image
-FROM node:lts-bullseye
+# Stage: Builder
+FROM node:lts-alpine AS builder
 
-# Setup working directory in the container fs
 WORKDIR /home/task-tracker
 
-# Copy the package dependencies
-COPY package.json yarn.lock
+COPY package.json yarn.lock ./
 
-# Install dependencies
-RUN yarn install
+RUN yarn
 
-# Copy the contents of current host dir to container working dir
 COPY . .
 
-# Expose port for mapping
+RUN yarn build
+
+# Stage: Prod Dependencies Builder
+FROM node:lts-alpine AS prod-dependencies
+
+WORKDIR /home/task-tracker
+
+COPY --from=builder /home/task-tracker/package.json ./package.json
+
+RUN yarn install --prod
+
+# Stage: Prod Image
+FROM node:lts-alpine
+
+WORKDIR /home/task-tracker
+
+COPY --from=builder /home/task-tracker/lib ./lib
+COPY --from=prod-dependencies /home/task-tracker/node_modules /node_modules
+
 EXPOSE 8848
 
-# Command to start the app
-CMD ["yarn", "start:dev"]
+CMD ["node", "lib/index.js"]
