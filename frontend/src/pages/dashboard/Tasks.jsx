@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+
+import { useQuery } from "@tanstack/react-query";
 
 import {
   Alert,
@@ -32,9 +34,7 @@ import { TaskForm } from "./components/TaskForm";
 import * as taskService from "@/services/task.service"
 
 export function Tasks() {
-  const [isLoading, setIsLoading] = useState(false);
   const [tasks, setTasks] = useState([]);
-  const [pagination, setPagination] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -72,46 +72,27 @@ export function Tasks() {
     "complete": "green"
   };
 
-  const fetchTasks = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
-        currentPage,
-        perPage: 5,
-        search,
-        status: status === "all" ? "" : status,
-        sortBy,
-        sortOrder
-      });
-  
-      setTasks(tasks);
-      setPagination(meta.paginationInfo);
-    } catch ({ response: { data, status }  }) {
-      if (status !== 422) {
-        setAlert({
-          "message": `Error: ${data.message}`,
-          "color": "red"
+  const { isPending, isError, data, error } = useQuery({
+    queryKey: ["fetchTasks", currentPage, search, status, sortBy, sortOrder],
+    queryFn: async () => {
+      try {
+        const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
+          currentPage,
+          perPage: 5,
+          search,
+          status: status === "all" ? "" : status,
+          sortBy,
+          sortOrder
         })
+  
+        return { tasks, paginationInfo: meta.paginationInfo };
+      } catch ({ response: { data, status }  }) {
+        return { data, status };
       }
-    }
+    },
+  });
 
-    setIsLoading(false);
-    setTimeout(() => {
-      setAlert({
-        "message": "",
-        "color": ""
-      });
-    }, 3000);
-  }, [currentPage, search, status, sortBy, sortOrder]);
-
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
-
-  const debouncedSearch = useMemo(() => {
-    return debounce((e) => setSearch(e.target.value), 500);
-  }, []);
+  const debouncedSearch = useMemo(() => debounce((e) => setSearch(e.target.value), 500), []);
 
   const handleSort = (sortColumn) => {
     let newSortBy = camelCase(sortColumn);
@@ -277,8 +258,8 @@ export function Tasks() {
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-      {isLoading && (<div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-        < Spinner color="white" />
+      {isPending && (<div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+        <Spinner color="white" />
       </div>)}
       {open &&
         <TaskForm
@@ -362,7 +343,7 @@ export function Tasks() {
               </tr>
             </thead>
             <tbody>
-              {tasks.map(
+              {data?.tasks.map(
                 (task, index) => {
                   const isLast = index === tasks.length - 1;
                   const classes = isLast
@@ -471,13 +452,13 @@ export function Tasks() {
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {currentPage} of {pagination.total}
+            Page {currentPage} of {data?.paginationInfo.total}
           </Typography>
           <div className="flex gap-2">
             <Button
               variant="outlined"
               size="sm"
-              disabled={!pagination.prevPage}
+              disabled={!data?.paginationInfo.prevPage}
               onClick={() => setCurrentPage(currentPage => currentPage - 1)}
             >
               Previous
@@ -485,7 +466,7 @@ export function Tasks() {
             <Button
               variant="outlined"
               size="sm"
-              disabled={!pagination.nextPage}
+              disabled={!data?.paginationInfo.nextPage}
               onClick={() => setCurrentPage(currentPage => currentPage + 1)}
             >
               Next
