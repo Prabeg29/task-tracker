@@ -1,10 +1,10 @@
-import type {Config} from 'jest';
+import type {Config} from "jest";
 
 const config: Config = {
-  preset         : 'ts-jest',
-  testEnvironment: 'node',
+  preset         : "ts-jest",
+  testEnvironment: "node",
   clearMocks     : true,
-  testMatch      : ['**/*/*.spec.ts'],
+  testMatch      : ["**/*/*.spec.ts"],
   testTimeout    : 10000,
 };
 

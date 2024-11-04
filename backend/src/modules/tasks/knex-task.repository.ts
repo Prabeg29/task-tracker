@@ -65,7 +65,7 @@ export class KnexTaskRepository implements TaskRepositoryInterface {
     }
 
     if (taskQuery.status) {
-      query.orWhere("status", taskQuery.status);
+      query.where("status", taskQuery.status);
     }
 
     return await paginate<TaskWithUsers>(query, {

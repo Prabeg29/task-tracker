@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useReducer } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   Alert,
@@ -21,10 +21,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 
-import {
-  MagnifyingGlassIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { InformationCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { debounce, camelCase } from "lodash";
@@ -33,66 +30,101 @@ import { TaskForm } from "./components/TaskForm";
 
 import * as taskService from "@/services/task.service"
 
+const TABS = [
+  { label: "All", value: "all" },
+  { label: "Todo", value: "todo" },
+  { label: "WIP", value: "wip" },
+  { label: "Complete", value: "complete" },
+];
+
+const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
+
+const STATUS_CHIP_COLORS = { "todo": "red", "wip": "amber", "complete": "green" };
+
+const initialState = {
+  currentPage: 1,
+  search: "",
+  status: "",
+  sortBy: "",
+  sortOrder: "asc",
+  open: false,
+  isEdit: false,
+  task: {
+    title: "",
+    description: "",
+    assignedTo: "",
+  },
+  errors: {
+    title: "",
+    description: "",
+    assignedTo: "",
+  },
+  alert: {
+    color: "",
+    message: "",
+  },
+};
+
+const validate = (field, value) => {
+  switch (field) {
+    case "title":
+      return value.length === 0 ? "Title is required" : "";
+    default:
+      return "";
+  }
+};
+
+function taskReducer(state, action) {
+  switch (action.type) {
+    case "SET_CURRENT_PAGE": return { ...state, currentPage: action.payload };
+    case "SET_SEARCH": return { ...state, search: action.payload };
+    case "SET_STATUS": return { ...state, status: action.payload };
+    case "SET_SORT": return { ...state, sortBy: action.payload.sortBy, sortOrder: action.payload.sortOrder };
+    case "TOGGLE_MODAL":
+      return {
+        ...state,
+        open: !state.open,
+        task: action?.payload || {title: "", description: "", assignedTo: ""},
+        isEdit: !!action.payload,
+      };
+    case "SET_ERRORS":
+      return { ...state, errors: { ...state.errors, [action.field]: validate(action.field, action.value) } };
+    case "SET_TASK_FIELD": return { ...state, task: { ...state.task, [action.field]: action.value } };
+    case "SET_ALERT": return { ...state, alert: action.payload };
+    case "CLEAR_ALERT": return { ...state, alert: { color: "", message: "" } };
+    default: return state;
+  }
+}
+
 export function Tasks() {
-  const [tasks, setTasks] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [sortBy, setSortBy] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [open, setOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [task, setTask] = useState({
-    "title": "",
-    "description": "",
-    "assignedTo": "",
-  });
-  const [errors, setErrors] = useState({
-    "title": "",
-    "description": "",
-    "assignedTo": "",
-  });
-  const [alert, setAlert] = useState({
-    "color": "",
-    "message": ""
-  });
+  const queryClient = useQueryClient();
+  const [state, dispatch] = useReducer(taskReducer, initialState);
 
-  const TABS = [
-    { label: "All", value: "all" },
-    { label: "Todo", value: "todo" },
-    { label: "WIP", value: "wip" },
-    { label: "Complete", value: "complete" },
-  ];
+  const queryKey = ["fetchTasks", state.currentPage, state.search, state.status, state.sortBy, state.sortOrder];
 
-  const TABLE_HEAD = ["Title", "Created By", "Assigned To", "Status", "Completed At", "Created At", ""];
-
-  const STATUS_CHIP_COLORS = {
-    "todo": "red",
-    "wip": "amber",
-    "complete": "green"
-  };
-
-  const { isPending, isError, data, error } = useQuery({
-    queryKey: ["fetchTasks", currentPage, search, status, sortBy, sortOrder],
+  const { isPending, data } = useQuery({
+    queryKey,
     queryFn: async () => {
       try {
         const { data: { tasks, meta } } = await taskService.fetchAllPaginated({
-          currentPage,
+          currentPage: state.currentPage,
           perPage: 5,
-          search,
-          status: status === "all" ? "" : status,
-          sortBy,
-          sortOrder
-        })
-  
+          search: state.search,
+          status: state.status === "all" ? "" : state.status,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        });
+
         return { tasks, paginationInfo: meta.paginationInfo };
-      } catch ({ response: { data, status }  }) {
+      } catch ({ response: { data, status } }) {
         return { data, status };
       }
     },
   });
 
-  const debouncedSearch = useMemo(() => debounce((e) => setSearch(e.target.value), 500), []);
+  const debouncedSearch = useMemo(() => debounce((e) => {
+    dispatch({ type: "SET_SEARCH", payload: e.target.value });
+  }, 500), []);
 
   const handleSort = (sortColumn) => {
     let newSortBy = camelCase(sortColumn);
@@ -101,188 +133,133 @@ export function Tasks() {
       newSortBy += "User.name";
     }
 
-    const newSortDirection = sortBy === newSortBy ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
-    setSortBy(newSortBy);
-    setSortOrder(newSortDirection);
+    const newSortDirection = state.sortBy === newSortBy ? (state.sortOrder === "asc" ? "desc" : "asc") : "asc";
+    dispatch({ type: "SET_SORT", payload: { sortBy: newSortBy, sortOrder: newSortDirection } });
   };
 
-  const markTaskAsComplete = async (selectedTask) => {
-    let updatedTask = {
-      id: selectedTask.id,
-      title: selectedTask.attributes.title,
-      description: selectedTask.attributes.description,
-      assignedTo: selectedTask.relationships.assignedTo.id,
-    };
-  
-    if (selectedTask.attributes.status !== "complete") {
-      updatedTask["status"] = "complete"
-    } else {
-      updatedTask["status"] = "todo";
-    }
+  const markTaskAsCompleteMutation = useMutation({
+    mutationFn: async (selectedTask) => {
+      let updatedTask = {
+        id: selectedTask.id,
+        title: selectedTask.attributes.title,
+        description: selectedTask.attributes.description,
+        assignedTo: selectedTask.relationships.assignedTo.id,
+        status: "todo"
+      };
 
-    setTask(updatedTask);
+      if (selectedTask.attributes.status !== "complete") {
+        updatedTask["status"] = "complete"
+      }
 
-    try {
       const { id, ...taskData } = updatedTask;
       await taskService.update(id, { ...taskData, assignedTo: Number(taskData.assignedTo) });
-      setAlert({
-        "message": "Success: Task saved",
-        "color": "green"
-      })
-      await fetchTasks();
-    } catch ({ response: { data, status } }) {
+    },
+    onSuccess: () => {
+      dispatch({ type: "SET_ALERT", payload: { message: "Success: Task updated", color: "green" } });
+      queryClient.invalidateQueries({ queryKey: queryKey })
+    },
+    onError: ({ response: { data, status } }) => {
       if (status !== 422) {
-        setAlert({
-          "message": `Error: ${data.message}`,
-          "color": "red"
-        })
+        dispatch({ type: "SET_ALERT", payload: { message: `Error: ${data.message}`, color: "red" } });
       }
-    }
-
-    setTimeout(() => {
-      setAlert({
-        "message": "",
-        "color": ""
-      });
-    }, 3000);
-  };
+    },
+    onSettled: () => setTimeout(() => dispatch({ type: "CLEAR_ALERT" }), 3000),
+  });
 
   const handleOpen = (task = null) => {
-    setIsEdit(false);
+    let payload;
 
-    setErrors({
-      "title": "",
-      "description": "",
-      "assignedTo": "",
-    })
-
-    if (task) {
-      setIsEdit(true);
-      setTask({
-        "id": task.id,
-        "title": task.attributes.title,
-        "description": task.attributes.description,
-        "assignedTo": task.relationships.assignedTo.id,
-        "status": task.attributes.status,
-      });
-    } else {
-      setTask({
-        "title": "",
-        "description": "",
-        "assignedTo": "",
-      });
+    if(task) {
+      payload = {
+        id: task.id,
+        title: task.attributes.title,
+        description: task.attributes.description,
+        assignedTo: task.relationships.assignedTo.id,
+        status: task.attributes.status
+      }
     }
 
-    setOpen((cur) => !cur);
-  }
-
-  const validate = (field, value) => {
-    switch (field) {
-      case "title":
-        return value.length === 0 ? "Title is required" : "";
-      default:
-        return "";
-    }
+    dispatch({ type: "TOGGLE_MODAL", payload });
   };
 
-  const handleSave = async (event) => {
-    event.preventDefault();
+  const taskSaveMutation = useMutation({
+    mutationFn: async (event) => {
+      event.preventDefault();
 
-    setErrors((prevErrors) => ({ ...prevErrors, ["title"]: validate("title", task.title) }));
-    
-    let hasError = false;
-    Object.values(errors).forEach((error) => {
-      if (error.length > 0) {
-        hasError = true;
-      }
-    });
+      // setErrors((prevErrors) => ({ ...prevErrors, ["title"]: validate("title", task.title) }));
 
-    if (hasError) {
-      return;
-    }
+      // let hasError = false;
+      // Object.values(errors).forEach((error) => {
+      //   if (error.length > 0) {
+      //     hasError = true;
+      //   }
+      // });
 
-    try {
-      if (isEdit) {
-        const id = task.id;
-        delete task.id;
-        await taskService.update(id, { ...task, assignedTo: Number(task.assignedTo) });
+      // if (hasError) {
+      //   return;
+      // }
+
+      if (state.isEdit) {
+        const id = state.task.id;
+        delete state.task.id;
+        await taskService.update(id, { ...state.task, assignedTo: Number(state.task.assignedTo) });
       } else {
-        await taskService.create({ ...task, assignedTo: Number(task.assignedTo) });
+        await taskService.create({ ...state.task, assignedTo: Number(state.task.assignedTo) });
       }
-      setAlert({
-        "message": "Success: Task saved",
-        "color": "green"
-      })
+    },
+    onSuccess: () => {
       handleOpen();
-      await fetchTasks();
-      
-    } catch ({ response: { data, status } }) {
+      dispatch({ type: "SET_ALERT", payload: { message: "Success: Task updated", color: "green" } });
+      queryClient.invalidateQueries({ queryKey: queryKey })
+    },
+    onError: ({ response: { data, status } }) => {
       if (status !== 422) {
-        setAlert({
-          "message": `Error: ${data.message}`,
-          "color": "red"
-        })
+        dispatch({ type: "SET_ALERT", payload: { message: `Error: ${data.message}`, color: "red" } });
       }
-    }
-    setTimeout(() => {
-      setAlert({
-        "message": "",
-        "color": ""
-      });
-    }, 3000);
-  };
+    },
+    onSettled: () => setTimeout(() => dispatch({ type: "CLEAR_ALERT" }), 3000),
+  });
 
-  const handleTaskDelete = async (id) => {
-    try {
-      await taskService.destroy(id);
-      setAlert({
-        "message": "Success: Task deleted",
-        "color": "green"
-      })
-      await fetchTasks();
-    } catch ({ response: { data, status } }) {
+  const taskDeleteMutation = useMutation({
+    mutationFn: async (id) => await taskService.destroy(id),
+    onSuccess: () => {
+      dispatch({ type: "SET_ALERT", payload: { message: "Success: Task deleted", color: "green" } });
+      queryClient.invalidateQueries({ queryKey: queryKey })
+    },
+    onError: ({ response: { data, status } }) => {
       if (status !== 422) {
-        setAlert({
-          "message": `Error: ${data.message}`,
-          "color": "red"
-        })
+        dispatch({ type: "SET_ALERT", payload: { message: `Error: ${data.message}`, color: "red" } });
       }
-    }
-    setTimeout(() => {
-      setAlert({
-        "message": "",
-        "color": ""
-      });
-    }, 3000);
-  };
+    },
+    onSettled: () => setTimeout(() => dispatch({ type: "CLEAR_ALERT" }), 3000),
+  });
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       {isPending && (<div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
         <Spinner color="white" />
       </div>)}
-      {open &&
+      {state.open &&
         <TaskForm
-          isEdit={isEdit}
-          open={open}
+          isEdit={state.isEdit}
+          open={state.open}
           handleOpen={handleOpen}
           statuses={TABS}
-          task={task}
-          setTask={setTask}
-          validate={validate}
-          errors={errors}
-          setErrors={setErrors}
-          handleSave={handleSave}
+          task={state.task}
+          setTask={(field, value) => dispatch({ type: "SET_TASK_FIELD", field, value })}
+          errors={state.errors}
+          setErrors={(field, value) => dispatch({ type: "SET_ERRORS", field, value })}
+          handleSave={taskSaveMutation}
         />}
       <Alert
-        open={alert.message.length > 0} 
-        onClose={() => setAlert({ "message": "", color: "" })}
-        color={alert.color}
+        open={state.alert.message.length > 0}
+        onClose={() => dispatch({ type: "CLEAR_ALERT" })}
+        color={state.alert.color}
         icon={
           <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
         }
       >
-        {alert.message}
+        {state.alert.message}
       </Alert>
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
@@ -302,7 +279,7 @@ export function Tasks() {
             <Tabs value="all" className="w-full md:w-max">
               <TabsHeader>
                 {TABS.map(({ label, value }) => (
-                  <Tab key={value} value={value} onClick={() => setStatus(value)}>
+                  <Tab key={value} value={value} onClick={() => dispatch({ type: "SET_STATUS", payload: value })}>
                     &nbsp;&nbsp;{label}&nbsp;&nbsp;
                   </Tab>
                 ))}
@@ -345,7 +322,7 @@ export function Tasks() {
             <tbody>
               {data?.tasks.map(
                 (task, index) => {
-                  const isLast = index === tasks.length - 1;
+                  const isLast = index === data.tasks.length - 1;
                   const classes = isLast
                     ? "p-4"
                     : "p-4 border-b border-blue-gray-50";
@@ -394,7 +371,7 @@ export function Tasks() {
                             color="blue-gray"
                             className="font-normal"
                           >
-                            <Chip 
+                            <Chip
                               color={STATUS_CHIP_COLORS[task.attributes.status]}
                               value={
                                 <Typography
@@ -404,7 +381,7 @@ export function Tasks() {
                                 >
                                   {task.attributes.status}
                                 </Typography>
-                              }/>
+                              } />
                           </Typography>
                         </div>
                       </td>
@@ -430,7 +407,11 @@ export function Tasks() {
                       </td>
                       <td className={classes}>
                         <Tooltip content="Mark Task as Complete">
-                          <Switch color="green" defaultChecked={task.attributes.status === "complete"} onClick={() => markTaskAsComplete(task)}/>
+                          <Switch 
+                            color="green"
+                            defaultChecked={task.attributes.status === "complete"}
+                            onClick={() => markTaskAsCompleteMutation.mutate(task)}
+                          />
                         </Tooltip>
                         <Tooltip content="Edit Task">
                           <IconButton variant="text" onClick={() => handleOpen(task)}>
@@ -438,7 +419,7 @@ export function Tasks() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip content="Delete Task">
-                          <IconButton variant="text" onClick={() => handleTaskDelete(task.id)}>
+                          <IconButton variant="text" onClick={() => taskDeleteMutation.mutate(task.id)}>
                             <TrashIcon className="h-4 w-4" />
                           </IconButton>
                         </Tooltip>
@@ -452,14 +433,19 @@ export function Tasks() {
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {currentPage} of {data?.paginationInfo.total}
+            Page {state.currentPage} of {data?.paginationInfo.lastPage}
           </Typography>
           <div className="flex gap-2">
             <Button
               variant="outlined"
               size="sm"
               disabled={!data?.paginationInfo.prevPage}
-              onClick={() => setCurrentPage(currentPage => currentPage - 1)}
+              onClick={() =>
+                dispatch({
+                  type: "SET_CURRENT_PAGE",
+                  payload: state.currentPage - 1,
+                })
+              }
             >
               Previous
             </Button>
@@ -467,7 +453,7 @@ export function Tasks() {
               variant="outlined"
               size="sm"
               disabled={!data?.paginationInfo.nextPage}
-              onClick={() => setCurrentPage(currentPage => currentPage + 1)}
+              onClick={() => dispatch({ type: "SET_CURRENT_PAGE", payload: state.currentPage + 1 })}
             >
               Next
             </Button>
