@@ -19,25 +19,26 @@ services:
     networks:
       - task-tracker
   
-  test-db:
-    image: mysql:latest
-    container_name: task-tracker_test-db
-    cap_add:
-      - SYS_NICE
-    command: --mysql-native-password=ON
-    restart: always
-    environment:
-      MYSQL_DATABASE: task_tracker_test
-      MYSQL_ROOT_PASSWORD: secret
-    ports:
-      - 2306:3306
-    networks:
-      - task-tracker
+  # test-db:
+  #   image: mysql:latest
+  #   container_name: task-tracker_test-db
+  #   cap_add:
+  #     - SYS_NICE
+  #   command: --mysql-native-password=ON
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: task_tracker_test
+  #     MYSQL_ROOT_PASSWORD: secret
+  #   ports:
+  #     - 2306:3306
+  #   networks:
+  #     - task-tracker
   
   backend:
     build:
       context: ./backend/
       dockerfile: Dockerfile
+      target: dev
     image: backend_image
     container_name: task-tracker_api
     depends_on:
